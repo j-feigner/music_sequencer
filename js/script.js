@@ -32,3 +32,18 @@ class MusicSequencer {
         })
     }
 }
+
+class CanvasGrid {
+    constructor(canvas, width, height, rows, columns) {
+        this.canvas = canvas;
+        this.ctx = this.canvas.getContext("2d");
+
+        this.rect = new Rectangle(0, 0, width, height);
+
+        this.rows = rows;
+        this.columns = columns;
+
+        this.row_height = height / rows;
+        this.column_width = width / columns;
+    }
+}
