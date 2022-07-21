@@ -45,5 +45,13 @@ class CanvasGrid {
 
         this.row_height = height / rows;
         this.column_width = width / columns;
+
+        this.cells = [];
+    }
+}
+
+class CanvasGridCell {
+    constructor(x, y, width, height) {
+        this.rect = new Rectangle(x, y, w, h);
     }
 }
