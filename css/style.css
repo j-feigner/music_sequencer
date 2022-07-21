@@ -11,5 +11,23 @@ html, body {
     top: 10%;
     height: 90%;
     overflow-x: hidden;
-    overflow-y: scroll;
+}
+
+.ui {
+    position: fixed;
+    top: 800px;
+    left: 50px;
+    width: 400px;
+    height: 200px;
+}
+
+.ui-button {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+}
+
+.ui-button img {
+    width: 100%;
+    height: 100%;
 }
