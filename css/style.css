@@ -5,3 +5,11 @@ html, body {
     margin: 0px;
     background-color: slategray;
 }
+
+.app-container {
+    position: absolute;
+    top: 10%;
+    height: 90%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
