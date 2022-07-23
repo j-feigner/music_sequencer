@@ -7,12 +7,8 @@ function main() {
     var canvas = document.querySelector(".temp-canvas");
     canvas.width = 1000;
     canvas.height = 500;
-    var sounds;
 
-    app.loadSounds("../sounds/piano").then(decoded_buffers => {
-        sounds = decoded_buffers;
-    })
-
+    app.start();
     app.tracks.push(new MusicTrack(001, "../sounds/piano", null));
     app.tracks[0].grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 4);
     app.tracks[0].grid.draw();
@@ -29,14 +25,6 @@ function main() {
             cell.draw(app.tracks[0].grid.ctx);
         }
     })
-
-    var instruments = null;
-    fetch("php/dir_contents.php?dir=../sounds", {method: "GET"})
-        .then(response => response.json())
-        .then(folder_names => {
-            instruments = folder_names
-            var stop = 0;
-        });
 }
 
 class MusicSequencer {
@@ -45,22 +33,40 @@ class MusicSequencer {
         this.audio_ctx = new AudioContext();
 
         this.tracks = [];
+        this.sounds = {};
+    }
+
+    start() {
+        this.loadSounds();
     }
 
     // Loads sounds by instrument/directory name
     // Returns an array of Promises that resolve to decoded sound buffers
-    loadSounds(directory) {
-        return fetch("php/dir_contents.php?dir=" + directory, {method: "GET"})
+    loadSounds() {
+        var instruments = null;
+
+        // Fetch all instrument folder names
+        fetch("php/dir_contents.php?dir=../sounds", {method: "GET"})
         .then(response => response.json())
-        .then(file_names => {
-            var urls = file_names.map(name => "sounds/" + directory + "/" + name);
-            var fetches = urls.map(url => fetch(url).then(response => response.arrayBuffer()));
-            return Promise.all(fetches);
-        })
-        .then(buffers => {
-            var sounds = buffers.map(buffer => this.audio_ctx.decodeAudioData(buffer)
-                .then(sound => sound));   
-            return Promise.all(sounds);
+        .then(folder_names => {
+            instruments = folder_names;
+            // Fetch and decode all sound files for each instrument folder
+            instruments.forEach(instr => {
+                fetch("php/dir_contents.php?dir=../sounds/" + instr, {method: "GET"})
+                .then(response => response.json())
+                .then(file_names => {
+                    var urls = file_names.map(name => "sounds/" + instr + "/" + name);
+                    var fetches = urls.map(url => fetch(url).then(response => response.arrayBuffer()));
+                    return Promise.all(fetches);
+                })
+                .then(buffers => {
+                    var sounds = buffers.map(buffer => this.audio_ctx.decodeAudioData(buffer));
+                    return Promise.all(sounds);
+                })
+                .then(decoded_sounds => {
+                    this.sounds[instr] = decoded_sounds;
+                });   
+            })
         })
     }
 }
