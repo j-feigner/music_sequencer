@@ -13,8 +13,22 @@ function main() {
         sounds = decoded_buffers;
     })
 
-    var grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18);
-    grid.draw();
+    app.tracks.push(new MusicTrack(001, "piano", null));
+    app.tracks[0].grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 4);
+    app.tracks[0].grid.draw();
+
+    canvas.addEventListener("click", event => {
+        var cell = app.tracks[0].grid.checkHit(event.offsetX, event.offsetY);
+        if(cell) {
+            if(cell.is_filled) {
+                cell.color = "rgb(255, 255, 255)";
+            } else {
+                cell.color = "rgb(255, 0, 0)";
+            }
+            cell.is_filled = !cell.is_filled;
+            cell.draw(app.tracks[0].grid.ctx);
+        }
+    })
 
     var stopper = 0;
 }
@@ -49,33 +63,44 @@ class MusicTrack {
     constructor(id, instrument, audio_ctx) {
         this.id = id;
         this.instrument = instrument;
+        this.grid = null;
     }
 }
 
 class CanvasGrid {
-    constructor(canvas, width, height, rows, columns) {
+    constructor(canvas, width, height, rows, columns, cell_width, cell_height, line_width) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
 
-        this.rect = new Rectangle(0, 0, width, height);
+        this.padding_x = Math.floor((width - (cell_width * columns)) / 2);
+        this.padding_y = Math.floor((height - (cell_height * rows)) / 2);
 
-        this.rows = rows;
-        this.columns = columns;
+        this.rect = new Rectangle(
+            line_width / 2 + this.padding_x, 
+            line_width / 2 + this.padding_y, 
+            width - line_width - (this.padding_x * 2), 
+            height - line_width - (this.padding_y * 2)
+        );
 
-        this.row_height = height / rows;
-        this.column_width = width / columns;
+        this.line_width = line_width;
+
+        this.num_rows = rows;
+        this.num_columns = columns;
+
+        this.row_height = cell_height;
+        this.column_width = cell_width;
 
         this.cells = this.initCells();
     }
 
     initCells() {
         var cells = [];
-        for(var i = 0; i < this.columns; i++) {
+        for(var i = 0; i < this.num_columns; i++) {
             var col = [];
-            for(var j = 0; j < this.rows; j++) {
+            for(var j = 0; j < this.num_rows; j++) {
                 var cell_x = this.rect.x + this.column_width * i;
                 var cell_y = this.rect.y + this.row_height * j;
-                col[j] = new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height);
+                col[j] = new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width);
             }
             cells.push(col);
         }
@@ -89,19 +114,37 @@ class CanvasGrid {
             })
         })
     }
+
+    checkHit(x, y) {
+        for(var i = 0; i < this.num_columns; i++) {
+            for(var j = 0; j < this.num_rows; j++) {
+                if(this.cells[i][j].rect.isPointInBounds(x,y)) {
+                    return this.cells[i][j];
+                }
+            }
+        }
+        return undefined;
+    }
 }
 
 class CanvasGridCell {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, line_width) {
         this.rect = new Rectangle(x, y, width, height);
+        this.line_width = line_width;
+        this.color = "rgb(255, 255, 255)";
+        this.is_filled = false;
     }
 
     draw(ctx) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = this.line_width;
         ctx.lineStyle = "black";
+        ctx.fillStyle = this.color;
+
+        ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
 
         ctx.beginPath();
         ctx.rect(this.rect.x, this.rect.y, this.rect.w, this.rect.h);
+        ctx.fill();
         ctx.stroke();
         ctx.closePath();
     }
