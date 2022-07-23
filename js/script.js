@@ -9,11 +9,11 @@ function main() {
     canvas.height = 500;
     var sounds;
 
-    app.loadSounds("piano").then(decoded_buffers => {
+    app.loadSounds("../sounds/piano").then(decoded_buffers => {
         sounds = decoded_buffers;
     })
 
-    app.tracks.push(new MusicTrack(001, "piano", null));
+    app.tracks.push(new MusicTrack(001, "../sounds/piano", null));
     app.tracks[0].grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 4);
     app.tracks[0].grid.draw();
 
@@ -30,12 +30,13 @@ function main() {
         }
     })
 
-    var stopper = app.tracks[0].grid.getRows();
-    stopper[9].forEach(cell => {
-        cell.color = "rgb(0, 255, 0)";
-        cell.draw(app.tracks[0].grid.ctx);
-    })
-    var bleh = 0;
+    var instruments = null;
+    fetch("php/dir_contents.php?dir=../sounds", {method: "GET"})
+        .then(response => response.json())
+        .then(folder_names => {
+            instruments = folder_names
+            var stop = 0;
+        });
 }
 
 class MusicSequencer {
@@ -49,7 +50,7 @@ class MusicSequencer {
     // Loads sounds by instrument/directory name
     // Returns an array of Promises that resolve to decoded sound buffers
     loadSounds(directory) {
-        return fetch("php/load_sounds.php?instr=" + directory, {method: "GET"})
+        return fetch("php/dir_contents.php?dir=" + directory, {method: "GET"})
         .then(response => response.json())
         .then(file_names => {
             var urls = file_names.map(name => "sounds/" + directory + "/" + name);
