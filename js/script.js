@@ -30,7 +30,12 @@ function main() {
         }
     })
 
-    var stopper = 0;
+    var stopper = app.tracks[0].grid.getRows();
+    stopper[9].forEach(cell => {
+        cell.color = "rgb(0, 255, 0)";
+        cell.draw(app.tracks[0].grid.ctx);
+    })
+    var bleh = 0;
 }
 
 class MusicSequencer {
@@ -93,37 +98,59 @@ class CanvasGrid {
         this.cells = this.initCells();
     }
 
+    // Creates all cell objects according to given parameters
     initCells() {
         var cells = [];
         for(var i = 0; i < this.num_columns; i++) {
-            var col = [];
             for(var j = 0; j < this.num_rows; j++) {
                 var cell_x = this.rect.x + this.column_width * i;
                 var cell_y = this.rect.y + this.row_height * j;
-                col[j] = new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width);
+                cells.push(new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width));
             }
-            cells.push(col);
         }
         return cells;
     }
 
+    // Calls cell.draw() on every cell in the grid
     draw() {
-        this.cells.forEach(column => {
-            column.forEach(cell => {
-                cell.draw(this.ctx);
-            })
+        this.cells.forEach(cell => {
+            cell.draw(this.ctx);
         })
     }
 
+    // Checks if given x,y pair falls inside the bounds of any grid cell
+    // Returns the cell on a successful hit, returns undefined if no hits found
     checkHit(x, y) {
-        for(var i = 0; i < this.num_columns; i++) {
-            for(var j = 0; j < this.num_rows; j++) {
-                if(this.cells[i][j].rect.isPointInBounds(x,y)) {
-                    return this.cells[i][j];
-                }
+        for(var i = 0; i < this.cells.length; i++) {
+            if(this.cells[i].rect.isPointInBounds(x,y)) {
+                return this.cells[i];
             }
         }
         return undefined;
+    }
+
+    // Returns an array of arrays representing the grid cells grouped by column
+    getColumns() {
+        var columns = [];
+        for(var i = 0; i < this.num_columns; i++) {
+            var start = i * this.num_rows;
+            var end = start + this.num_rows;
+            columns.push(this.cells.slice(start, end));
+        }
+        return columns;
+    }
+
+    // Returns an array of arrays representing the grid cells grouped by row
+    getRows() {
+        var rows = [];
+        for(var i = 0; i < this.num_rows; i++) {
+            var row = [];
+            for(var j = i; j < this.cells.length; j += this.num_rows) {
+                row.push(this.cells[j]);
+            }
+            rows.push(row);
+        }
+        return rows;
     }
 }
 
