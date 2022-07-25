@@ -25,6 +25,15 @@ class Color {
         return new Color(dr, dg, db, da);
     }
 
+    // Returns a new Color with modified r,g,b values
+    static getModifiedColor(color, dr, dg, db) {
+        var r = Math.min(Math.max(0, color.r + dr), 255);
+        var g = Math.min(Math.max(0, color.g + dg), 255);
+        var b = Math.min(Math.max(0, color.b + db), 255);
+
+        return new Color(r, g, b, color.a);
+    }
+
     // Fades from current color to end_color over time milliseconds
     fade(end_color, time) {
         var increment = 50;
@@ -51,14 +60,14 @@ class Color {
     }
 
     // Adds a single delta to all r,g,b values
-    modify(d) {
+    modifyAll(d) {
         this.r = Math.min(Math.max(0, this.r + d), 255);
         this.g = Math.min(Math.max(0, this.g + d), 255);
         this.b = Math.min(Math.max(0, this.b + d), 255);
     }
 
     // Adds specific deltas to r,g,b values
-    modify (dr, dg, db) {
+    modify(dr, dg, db) {
         this.r = Math.min(Math.max(0, this.r + dr), 255);
         this.g = Math.min(Math.max(0, this.g + dg), 255);
         this.b = Math.min(Math.max(0, this.b + db), 255);
