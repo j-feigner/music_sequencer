@@ -9,8 +9,7 @@ function main() {
     canvas.height = 500;
 
     app.start();
-    app.tracks.push(new MusicTrack(001, "../sounds/piano", null));
-    app.tracks[0].grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 4);
+    app.tracks.push(new MusicTrack(001, "piano", new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 2)));
     app.tracks[0].grid.draw();
 
     canvas.addEventListener("click", event => {
@@ -19,12 +18,23 @@ function main() {
             if(cell.is_filled) {
                 cell.color = "rgb(255, 255, 255)";
             } else {
-                cell.color = "rgb(255, 0, 0)";
+                cell.color = "rgb(125, 85, 110)";
             }
             cell.is_filled = !cell.is_filled;
             cell.draw(app.tracks[0].grid.ctx);
         }
     })
+
+    var play_button = document.querySelector("#playSong");
+    play_button.addEventListener("click", e => {
+        app.stopSong();
+        app.playSong();
+    });
+
+    var stop_button = document.querySelector("#stopSong");
+    stop_button.addEventListener("click", e => {
+        app.stopSong();
+    });
 }
 
 class MusicSequencer {
@@ -34,14 +44,14 @@ class MusicSequencer {
 
         this.tracks = [];
         this.sounds = {};
+
+        this.audio_buffers = [];
     }
 
     start() {
         this.loadSounds();
     }
 
-    // Loads sounds by instrument/directory name
-    // Returns an array of Promises that resolve to decoded sound buffers
     loadSounds() {
         var instruments = null;
 
@@ -69,13 +79,44 @@ class MusicSequencer {
             })
         })
     }
+
+    playSong() {
+        // Create buffer nodes for each filled note in grid with proper delay
+        this.tracks.forEach(track => {
+            var current_time = this.audio_ctx.currentTime;
+            var beats = track.grid.getColumns();
+            var sounds = this.sounds[track.instrument];
+            var buffers = [];
+
+            beats.forEach((beat, beat_index) => {
+                beat.forEach((note, note_index) => {
+                    if(note.is_filled) {
+                        var source = this.audio_ctx.createBufferSource();
+                        source.buffer = sounds[sounds.length - note_index - 1];
+                        source.connect(this.audio_ctx.destination);
+                        source.start(current_time + (0.25 * beat_index));
+                        buffers.push(source);
+                    }
+                })
+            })
+
+            this.audio_buffers = buffers;
+        })       
+    }
+
+    stopSong() {
+        this.audio_buffers.forEach(buffer => {
+            buffer.stop();
+        })
+        this.audio_buffers = [];
+    }
 }
 
 class MusicTrack {
-    constructor(id, instrument, audio_ctx) {
+    constructor(id, instrument, grid) {
         this.id = id;
         this.instrument = instrument;
-        this.grid = null;
+        this.grid = grid;
     }
 }
 
@@ -171,7 +212,7 @@ class CanvasGridCell {
 
     draw(ctx) {
         ctx.lineWidth = this.line_width;
-        ctx.lineStyle = "black";
+        ctx.strokeStyle = "gray";
         ctx.fillStyle = this.color;
 
         ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
