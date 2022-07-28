@@ -9,7 +9,7 @@ function main() {
     canvas.height = 500;
 
     app.start();
-    app.tracks.push(new MusicTrack(001, "piano", new CanvasGrid(canvas, canvas.width, canvas.height, 10, 18, 46, 46, 2)));
+    app.tracks.push(new MusicTrack(001, "piano", new CanvasGrid(canvas, canvas.width, canvas.height, 10, 20, 46, 46, 2)));
     app.tracks[0].grid.draw();
 
     canvas.addEventListener("click", event => {
@@ -46,6 +46,10 @@ class MusicSequencer {
         this.sounds = {};
 
         this.audio_buffers = [];
+
+        this.animation = null;
+
+        this.beat_length = 250;
     }
 
     start() {
@@ -81,13 +85,13 @@ class MusicSequencer {
     }
 
     playSong() {
-        // Create buffer nodes for each filled note in grid with proper delay
+        // Create buffer nodes for each filled note in track grid
         this.tracks.forEach(track => {
             var current_time = this.audio_ctx.currentTime;
             var beats = track.grid.getColumns();
             var sounds = this.sounds[track.instrument];
             var buffers = [];
-
+            // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
                 beat.forEach((note, note_index) => {
                     if(note.is_filled) {
@@ -99,16 +103,73 @@ class MusicSequencer {
                     }
                 })
             })
+            this.audio_buffers = buffers; // Capture source nodes to enable playback stopping
+        }) 
 
-            this.audio_buffers = buffers;
-        })       
+        this.animate();
     }
 
     stopSong() {
+        // Cancel any animation currently active
+        window.cancelAnimationFrame(this.animation);
+        // Refresh grid to remove any animation artifacts
+        this.tracks.forEach(track => {
+            track.grid.cells.forEach(cell => {
+                cell.is_playing = false;
+            })
+            track.grid.draw();
+        })
+        // Stop all scheduled audio buffers and reset buffer array
         this.audio_buffers.forEach(buffer => {
             buffer.stop();
         })
         this.audio_buffers = [];
+    }
+
+    animate() {
+        var start, active_beat;
+        var beats = 20;
+
+        var step = function(timestamp) {
+            // Initialize start of animation
+            if(start === undefined) {
+                start = timestamp;
+            }
+            
+            // Time elapsed in ms since start of animation
+            const progress = timestamp - start;
+    
+            // Get current beat according to time elapsed against song tempo
+            var current_beat = Math.floor(progress/this.beat_length);
+    
+            // Animation has finished, clear last beat and exit function
+            if(current_beat >= beats) {
+                this.tracks.forEach(track => {
+                    track.toggleBeat(active_beat);
+                })
+                window.cancelAnimationFrame(this.animation);
+                return null;
+            }
+            // Update grid if progress has moved to a new beat
+            if(current_beat != active_beat) {
+                // If not the first beat, clear previous beat
+                if(current_beat != 0) {
+                    this.tracks.forEach(track => {
+                        track.toggleBeat(active_beat);
+                    })
+                }
+                // Proceed with next beat
+                this.tracks.forEach(track => {
+                    track.toggleBeat(current_beat);
+                })
+                // Set active beat
+                active_beat = current_beat;
+            }
+    
+            this.animation = window.requestAnimationFrame(step);
+        }.bind(this);
+
+        this.animation = window.requestAnimationFrame(step);
     }
 }
 
@@ -117,6 +178,14 @@ class MusicTrack {
         this.id = id;
         this.instrument = instrument;
         this.grid = grid;
+    }
+
+    toggleBeat(index) {
+        var col = this.grid.getColumns();
+        col[index].forEach(cell => {
+            cell.is_playing = !cell.is_playing;
+            cell.draw(this.grid.ctx);
+        })
     }
 }
 
@@ -206,14 +275,31 @@ class CanvasGridCell {
     constructor(x, y, width, height, line_width) {
         this.rect = new Rectangle(x, y, width, height);
         this.line_width = line_width;
-        this.color = "rgb(255, 255, 255)";
+
+        this.base_color = new Color(255, 255, 255);
+        this.fill_color = new Color(200, 125, 125);
+
+        this.color = this.base_color;
+
         this.is_filled = false;
+        this.is_playing = false;
     }
 
     draw(ctx) {
         ctx.lineWidth = this.line_width;
         ctx.strokeStyle = "gray";
-        ctx.fillStyle = this.color;
+
+        if(this.is_filled) {
+            this.color = this.fill_color;
+        } else {
+            this.color = this.base_color;
+        }
+
+        if(this.is_playing) {
+            this.color = Color.getModifiedColor(this.color, -50, -50, -50);
+        }
+
+        ctx.fillStyle = this.color.toString();
 
         ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
 
