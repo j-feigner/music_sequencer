@@ -4,26 +4,7 @@ function main() {
     var app = new MusicSequencer();
     app.container = document.querySelector(".app-container");
 
-    var canvas = document.querySelector(".temp-canvas");
-    canvas.width = 1000;
-    canvas.height = 500;
-
     app.start();
-    app.tracks.push(new MusicTrack(001, "piano", new CanvasGrid(canvas, canvas.width, canvas.height, 10, 20, 46, 46, 2)));
-    app.tracks[0].grid.draw();
-
-    canvas.addEventListener("click", event => {
-        var cell = app.tracks[0].grid.checkHit(event.offsetX, event.offsetY);
-        if(cell) {
-            if(cell.is_filled) {
-                cell.color = "rgb(255, 255, 255)";
-            } else {
-                cell.color = "rgb(125, 85, 110)";
-            }
-            cell.is_filled = !cell.is_filled;
-            cell.draw(app.tracks[0].grid.ctx);
-        }
-    })
 
     var play_button = document.querySelector("#playSong");
     play_button.addEventListener("click", e => {
@@ -35,25 +16,33 @@ function main() {
     stop_button.addEventListener("click", e => {
         app.stopSong();
     });
+
+    var add_track_button = document.querySelector("#addTrack");
+    add_track_button.addEventListener("click", e => {
+        app.createTrack("guitar");
+    })
 }
 
 class MusicSequencer {
     constructor() {
-        this.container = null;
+        this.container = document.querySelector(".app-container");
         this.audio_ctx = new AudioContext();
 
+        this.track_insert_point = document.querySelector("#trackInsertPoint");
+        
         this.tracks = [];
+        this.track_length = 20;
+        this.track_height
+
         this.sounds = {};
-
         this.audio_buffers = [];
-
         this.animation = null;
-
         this.beat_length = 250;
     }
 
     start() {
         this.loadSounds();
+        this.createTrack("piano");
     }
 
     loadSounds() {
@@ -84,13 +73,28 @@ class MusicSequencer {
         })
     }
 
+    createTrack(instrument) {
+        fetch("html/music_track.html", {method: "GET"})
+        .then(response => response.text())
+        .then(html => {
+            var div = document.createElement("div");
+            div.innerHTML = html;
+
+            var canvas = div.querySelector(".track-canvas");
+            var track = new MusicTrack(this.tracks.length, instrument, canvas);
+    
+            this.tracks.push(track);
+            this.container.insertBefore(div.firstChild, this.track_insert_point);
+        })
+    }
+
     playSong() {
         // Create buffer nodes for each filled note in track grid
+        var buffers = [];
         this.tracks.forEach(track => {
             var current_time = this.audio_ctx.currentTime;
             var beats = track.grid.getColumns();
             var sounds = this.sounds[track.instrument];
-            var buffers = [];
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
                 beat.forEach((note, note_index) => {
@@ -103,8 +107,8 @@ class MusicSequencer {
                     }
                 })
             })
-            this.audio_buffers = buffers; // Capture source nodes to enable playback stopping
         }) 
+        this.audio_buffers = buffers; // Capture source nodes to enable playback stopping
 
         this.animate();
     }
@@ -174,10 +178,35 @@ class MusicSequencer {
 }
 
 class MusicTrack {
-    constructor(id, instrument, grid) {
+    constructor(id, instrument, grid_canvas) {
         this.id = id;
         this.instrument = instrument;
-        this.grid = grid;
+        this.grid;
+        
+        this.initGrid(grid_canvas);
+        this.initEvents(grid_canvas);
+    }
+
+    initGrid(canvas) {
+        canvas.width = 1000;
+        canvas.height = 500;
+        this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 20, 46, 46, 2);
+        this.grid.draw();
+    }
+
+    initEvents(canvas) {
+        canvas.addEventListener("click", event => {
+            var cell = this.grid.checkHit(event.offsetX, event.offsetY);
+            if(cell) {
+                if(cell.is_filled) {
+                    cell.color = "rgb(255, 255, 255)";
+                } else {
+                    cell.color = "rgb(125, 85, 110)";
+                }
+                cell.is_filled = !cell.is_filled;
+                cell.draw(this.grid.ctx);
+            }
+        })
     }
 
     toggleBeat(index) {
@@ -236,7 +265,7 @@ class CanvasGrid {
     }
 
     // Checks if given x,y pair falls inside the bounds of any grid cell
-    // Returns the cell on a successful hit, returns undefined if no hits found
+    // Returns the cell object on a successful hit, returns undefined if no hits found
     checkHit(x, y) {
         for(var i = 0; i < this.cells.length; i++) {
             if(this.cells[i].rect.isPointInBounds(x,y)) {
