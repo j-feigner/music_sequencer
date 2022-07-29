@@ -110,12 +110,12 @@ class MusicSequencer {
         }) 
         this.audio_buffers = buffers; // Capture source nodes to enable playback stopping
 
-        this.animate();
+        this.tracks.forEach(track => track.playAnimation(this.beat_length));
     }
 
     stopSong() {
         // Cancel any animation currently active
-        window.cancelAnimationFrame(this.animation);
+        this.tracks.forEach(track => track.stopAnimation());
         // Refresh grid to remove any animation artifacts
         this.tracks.forEach(track => {
             track.grid.cells.forEach(cell => {
@@ -129,52 +129,6 @@ class MusicSequencer {
         })
         this.audio_buffers = [];
     }
-
-    animate() {
-        var start, active_beat;
-        var beats = 20;
-
-        var step = function(timestamp) {
-            // Initialize start of animation
-            if(start === undefined) {
-                start = timestamp;
-            }
-            
-            // Time elapsed in ms since start of animation
-            const progress = timestamp - start;
-    
-            // Get current beat according to time elapsed against song tempo
-            var current_beat = Math.floor(progress/this.beat_length);
-    
-            // Animation has finished, clear last beat and exit function
-            if(current_beat >= beats) {
-                this.tracks.forEach(track => {
-                    track.toggleBeat(active_beat);
-                })
-                window.cancelAnimationFrame(this.animation);
-                return null;
-            }
-            // Update grid if progress has moved to a new beat
-            if(current_beat != active_beat) {
-                // If not the first beat, clear previous beat
-                if(current_beat != 0) {
-                    this.tracks.forEach(track => {
-                        track.toggleBeat(active_beat);
-                    })
-                }
-                // Proceed with next beat
-                this.tracks.forEach(track => {
-                    track.toggleBeat(current_beat);
-                })
-                // Set active beat
-                active_beat = current_beat;
-            }
-    
-            this.animation = window.requestAnimationFrame(step);
-        }.bind(this);
-
-        this.animation = window.requestAnimationFrame(step);
-    }
 }
 
 class MusicTrack {
@@ -182,6 +136,8 @@ class MusicTrack {
         this.id = id;
         this.instrument = instrument;
         this.grid;
+
+        this.animation;
         
         this.initGrid(grid_canvas);
         this.initEvents(grid_canvas);
@@ -207,6 +163,50 @@ class MusicTrack {
                 cell.draw(this.grid.ctx);
             }
         })
+    }
+
+    playAnimation(tempo) {
+        var start, active_beat;
+        var beats = 20;
+
+        var step = function(timestamp) {
+            // Initialize start of animation
+            if(start === undefined) {
+                start = timestamp;
+            }
+            
+            // Time elapsed in ms since start of animation
+            const progress = timestamp - start;
+    
+            // Get current beat according to time elapsed against song tempo
+            var current_beat = Math.floor(progress/tempo);
+    
+            // Animation has finished, clear last beat and exit function
+            if(current_beat >= beats) {
+                this.toggleBeat(active_beat);
+                window.cancelAnimationFrame(this.animation);
+                return null;
+            }
+            // Update grid if progress has moved to a new beat
+            if(current_beat != active_beat) {
+                // If not the first beat, clear previous beat
+                if(current_beat != 0) {
+                    this.toggleBeat(active_beat);
+                }
+                // Proceed with next beat
+                this.toggleBeat(current_beat);
+                // Set active beat
+                active_beat = current_beat;
+            }
+    
+            this.animation = window.requestAnimationFrame(step);
+        }.bind(this);
+
+        this.animation = window.requestAnimationFrame(step);
+    }
+
+    stopAnimation() {
+        window.cancelAnimationFrame(this.animation);
     }
 
     toggleBeat(index) {
