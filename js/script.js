@@ -81,6 +81,8 @@ class MusicSequencer {
             div.innerHTML = html;
 
             var canvas = div.querySelector(".track-canvas");
+            canvas.width = 970;
+            canvas.height = 190;
             var track = new MusicTrack(this.tracks.length, instrument, canvas);
     
             this.tracks.push(track);
@@ -144,9 +146,13 @@ class MusicTrack {
     }
 
     initGrid(canvas) {
-        canvas.width = 1000;
-        canvas.height = 500;
-        this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, 10, 20, 46, 46, 2);
+        var rows = 24;
+        var columns = 64;
+        var cell_width = 45;
+        var cell_height = 30;
+        canvas.width = columns * cell_width + 10;
+        canvas.height = rows * cell_height + 10;
+        this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, rows, columns, cell_width, cell_height, 2);
         this.grid.draw();
     }
 
@@ -167,7 +173,7 @@ class MusicTrack {
 
     playAnimation(tempo) {
         var start, active_beat;
-        var beats = 20;
+        var beats = this.grid.getColumns().length;
 
         var step = function(timestamp) {
             // Initialize start of animation
@@ -210,8 +216,8 @@ class MusicTrack {
     }
 
     toggleBeat(index) {
-        var col = this.grid.getColumns();
-        col[index].forEach(cell => {
+        var col = this.grid.getColumn(index);
+        col.forEach(cell => {
             cell.is_playing = !cell.is_playing;
             cell.draw(this.grid.ctx);
         })
@@ -279,24 +285,34 @@ class CanvasGrid {
     getColumns() {
         var columns = [];
         for(var i = 0; i < this.num_columns; i++) {
-            var start = i * this.num_rows;
-            var end = start + this.num_rows;
-            columns.push(this.cells.slice(start, end));
+            columns.push(this.getColumn(i));
         }
         return columns;
+    }
+
+    // Returns an array of cells at given column index
+    getColumn(index) {
+        var start = index * this.num_rows;
+        var end = start + this.num_rows;
+        return this.cells.slice(start, end);
     }
 
     // Returns an array of arrays representing the grid cells grouped by row
     getRows() {
         var rows = [];
         for(var i = 0; i < this.num_rows; i++) {
-            var row = [];
-            for(var j = i; j < this.cells.length; j += this.num_rows) {
-                row.push(this.cells[j]);
-            }
-            rows.push(row);
+            rows.push(this.getRow(i));
         }
         return rows;
+    }
+
+    // Returns an array of cells at given row index
+    getRow(index) {
+        var row = [];
+        for(var i = 0; i < this.cells.length; i += this.num_rows) {
+            row.push(this.cells[i]);
+        }
+        return row;
     }
 }
 
