@@ -81,9 +81,7 @@ class MusicSequencer {
             div.innerHTML = html;
 
             var canvas = div.querySelector(".track-canvas");
-            canvas.width = 970;
-            canvas.height = 190;
-            var track = new MusicTrack(this.tracks.length, instrument, canvas);
+            var track = new MusicTrack(div.firstChild, this.audio_ctx, instrument, canvas);
     
             this.tracks.push(track);
             this.container.insertBefore(div.firstChild, this.track_insert_point);
@@ -97,13 +95,21 @@ class MusicSequencer {
             var current_time = this.audio_ctx.currentTime;
             var beats = track.grid.getColumns();
             var sounds = this.sounds[track.instrument];
+            
+            // Set destination according to reverb status
+            var destination;
+            if(track.reverb) {
+                destination = track.reverb_node;
+            } else {
+                destination = this.audio_ctx.destination;
+            }
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
                 beat.forEach((note, note_index) => {
                     if(note.is_filled) {
                         var source = this.audio_ctx.createBufferSource();
                         source.buffer = sounds[sounds.length - note_index - 1];
-                        source.connect(this.audio_ctx.destination);
+                        source.connect(destination);
                         source.start(current_time + (0.25 * beat_index));
                         buffers.push(source);
                     }
@@ -134,19 +140,23 @@ class MusicSequencer {
 }
 
 class MusicTrack {
-    constructor(id, instrument, grid_canvas) {
-        this.id = id;
+    constructor(container, audio_ctx, instrument, grid_canvas) {
+        this.container = container;
         this.instrument = instrument;
         this.grid;
+
+        this.reverb = false;
+        this.reverb_node;
 
         this.animation;
         
         this.initGrid(grid_canvas);
         this.initEvents(grid_canvas);
+        this.initReverb(audio_ctx);
     }
 
     initGrid(canvas) {
-        var rows = 24;
+        var rows = 13;
         var columns = 64;
         var cell_width = 45;
         var cell_height = 30;
@@ -169,6 +179,21 @@ class MusicTrack {
                 cell.draw(this.grid.ctx);
             }
         })
+
+        this.container.querySelector(".reverb-switch").addEventListener("input", e => {
+            this.reverb = !this.reverb;
+        })
+    }
+
+    initReverb(ctx) {
+        this.reverb_node = ctx.createConvolver();
+        fetch("sounds/impulse_response/JFKUnderpass.wav", {method: "GET"})
+        .then(response => response.arrayBuffer())
+        .then(array_buffer => ctx.decodeAudioData(array_buffer))
+        .then(data => {
+            this.reverb_node.buffer = data;
+            this.reverb_node.connect(ctx.destination);
+        });
     }
 
     playAnimation(tempo) {
@@ -250,7 +275,7 @@ class CanvasGrid {
         this.cells = this.initCells();
     }
 
-    // Creates all cell objects according to given parameters
+    // Creates all cell objects according to grid parameters
     initCells() {
         var cells = [];
         for(var i = 0; i < this.num_columns; i++) {
@@ -309,7 +334,7 @@ class CanvasGrid {
     // Returns an array of cells at given row index
     getRow(index) {
         var row = [];
-        for(var i = 0; i < this.cells.length; i += this.num_rows) {
+        for(var i = index; i < this.cells.length; i += this.num_rows) {
             row.push(this.cells[i]);
         }
         return row;
