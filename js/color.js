@@ -12,7 +12,18 @@ class Color {
     // Linearly interpolates between two Color objects and returns an array
     // of discrete Colors between start_color and end_color
     static createColorGradient(start_color, end_color, steps) {
-        
+        var colors = [];
+        var step_size = 1 / steps;
+
+        // Interpolate between start_color and end_color on discrete t steps
+        for(var t = 0; t <= 1; t += step_size) {
+            colors.push(new Color(
+                (1 - t) * start_color.r + t * end_color.r,
+                (1 - t) * start_color.g + t * end_color.g,
+                (1 - t) * start_color.b + t * end_color.b
+            ));
+        }
+        return colors;
     }
 
     // Returns a Color between start_color and end_color at given ratio between the two

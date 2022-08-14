@@ -21,6 +21,11 @@ function main() {
     add_track_button.addEventListener("click", e => {
         app.createTrack("guitar");
     })
+
+    var start_color = new Color(122, 75, 0);
+    var end_color = new Color(50, 147, 211);
+    var color_gradient = Color.createColorGradient(start_color, end_color, 12);
+    var stop = 0;
 }
 
 class MusicSequencer {
@@ -272,6 +277,11 @@ class CanvasGrid {
         this.row_height = cell_height;
         this.column_width = cell_width;
 
+        this.colors = Color.createColorGradient(
+            new Color(122, 75, 0), 
+            new Color(50, 147, 211),
+            13);
+
         this.cells = this.initCells();
     }
 
@@ -282,7 +292,7 @@ class CanvasGrid {
             for(var j = 0; j < this.num_rows; j++) {
                 var cell_x = this.rect.x + this.column_width * i;
                 var cell_y = this.rect.y + this.row_height * j;
-                cells.push(new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width));
+                cells.push(new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width, this.colors[j]));
             }
         }
         return cells;
@@ -342,12 +352,12 @@ class CanvasGrid {
 }
 
 class CanvasGridCell {
-    constructor(x, y, width, height, line_width) {
+    constructor(x, y, width, height, line_width, fill_color) {
         this.rect = new Rectangle(x, y, width, height);
         this.line_width = line_width;
 
         this.base_color = new Color(255, 255, 255);
-        this.fill_color = new Color(200, 125, 125);
+        this.fill_color = fill_color;
 
         this.color = this.base_color;
 
