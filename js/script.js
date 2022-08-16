@@ -22,32 +22,35 @@ function main() {
         app.createTrack("guitar");
     })
 
-    var start_color = new Color(122, 75, 0);
-    var end_color = new Color(50, 147, 211);
-    var color_gradient = Color.createColorGradient(start_color, end_color, 12);
-    var stop = 0;
+    var scroll_controller = document.querySelector("#songScroll");
+    scroll_controller.addEventListener("input", e => {
+
+    })
 }
 
 class MusicSequencer {
     constructor() {
-        this.container = document.querySelector(".app-container");
         this.audio_ctx = new AudioContext();
-
+        // DOM properties
+        this.container = document.querySelector(".app-container");
         this.track_insert_point = document.querySelector("#trackInsertPoint");
-        
-        this.tracks = [];
-        this.track_length = 20;
-        this.track_height
-
-        this.sounds = {};
-        this.audio_buffers = [];
+        // Song playback and animation properties
         this.animation = null;
+        this.audio_buffers = [];
         this.beat_length = 250;
+        // UI properties
+        this.scrollbar;
+        this.scroll_step;
+
+        // Main data containers
+        this.tracks = [];
+        this.sounds = {};
     }
 
     start() {
         this.loadSounds();
         this.createTrack("piano");
+        this.initScroll();
     }
 
     loadSounds() {
@@ -74,6 +77,16 @@ class MusicSequencer {
                 .then(decoded_sounds => {
                     this.sounds[instr] = decoded_sounds;
                 });   
+            })
+        })
+    }
+
+    initScroll() {
+        this.scrollbar = document.querySelector("#songScroll");
+        this.scrollbar.addEventListener("input", e => {
+            this.tracks.forEach(track => {
+                var scroll_step = (track.canvas_container.offsetWidth + 40 - track.container.offsetWidth) / 200;
+                track.canvas_container.style.left = "-" + (this.scrollbar.value * scroll_step) + "px"
             })
         })
     }
@@ -146,13 +159,14 @@ class MusicSequencer {
 
 class MusicTrack {
     constructor(container, audio_ctx, instrument, grid_canvas) {
+        // DOM properties
         this.container = container;
+        this.canvas_container = container.querySelector(".canvas-container");
+
         this.instrument = instrument;
         this.grid;
-
         this.reverb = false;
         this.reverb_node;
-
         this.animation;
         
         this.initGrid(grid_canvas);
@@ -165,8 +179,8 @@ class MusicTrack {
         var columns = 64;
         var cell_width = 45;
         var cell_height = 30;
-        canvas.width = columns * cell_width + 10;
-        canvas.height = rows * cell_height + 10;
+        canvas.width = columns * cell_width + 2;
+        canvas.height = rows * cell_height + 2;
         this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, rows, columns, cell_width, cell_height, 2);
         this.grid.draw();
     }
@@ -259,14 +273,11 @@ class CanvasGrid {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
 
-        this.padding_x = Math.floor((width - (cell_width * columns)) / 2);
-        this.padding_y = Math.floor((height - (cell_height * rows)) / 2);
-
         this.rect = new Rectangle(
-            line_width / 2 + this.padding_x, 
-            line_width / 2 + this.padding_y, 
-            width - line_width - (this.padding_x * 2), 
-            height - line_width - (this.padding_y * 2)
+            line_width / 2, 
+            line_width / 2, 
+            width - line_width, 
+            height - line_width
         );
 
         this.line_width = line_width;
@@ -278,7 +289,7 @@ class CanvasGrid {
         this.column_width = cell_width;
 
         this.colors = Color.createColorGradient(
-            new Color(122, 75, 0), 
+            new Color(180, 75, 0), 
             new Color(50, 147, 211),
             13);
 
