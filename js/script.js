@@ -182,6 +182,7 @@ class MusicTrack {
         canvas.width = columns * cell_width + 2;
         canvas.height = rows * cell_height + 2;
         this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, rows, columns, cell_width, cell_height, 2);
+        this.setBeatBaseColors(new Color(240, 240, 240), new Color(220, 220, 220), 4);
         this.grid.draw();
     }
 
@@ -264,6 +265,23 @@ class MusicTrack {
         col.forEach(cell => {
             cell.is_playing = !cell.is_playing;
             cell.draw(this.grid.ctx);
+        })
+    }
+
+    setBeatBaseColors(c1, c2, increment) {
+        var beat_switch = false;
+
+        this.grid.getColumns().forEach((column, index) => {
+            if(index % increment == 0) {
+                beat_switch = !beat_switch
+            }
+            column.forEach(cell => {
+                if(beat_switch) {
+                    cell.base_color = c1
+                } else {
+                    cell.base_color = c2
+                }
+            })
         })
     }
 }
@@ -367,7 +385,7 @@ class CanvasGridCell {
         this.rect = new Rectangle(x, y, width, height);
         this.line_width = line_width;
 
-        this.base_color = new Color(255, 255, 255);
+        this.base_color = new Color(240, 240, 240);
         this.fill_color = fill_color;
 
         this.color = this.base_color;
@@ -380,17 +398,23 @@ class CanvasGridCell {
         ctx.lineWidth = this.line_width;
         ctx.strokeStyle = "gray";
 
+        // Modify color based on fill status
         if(this.is_filled) {
             this.color = this.fill_color;
         } else {
             this.color = this.base_color;
         }
 
+        // Modify color based on playing animation status
         if(this.is_playing) {
-            this.color = Color.getModifiedColor(this.color, -50, -50, -50);
+            if(this.is_filled) {
+                this.color = new Color(255, 255, 255);
+            } else {
+                this.color = new Color(170, 170, 200);
+            }
         }
 
-        ctx.fillStyle = this.color.toString();
+        ctx.fillStyle = this.color.toString(true);
 
         ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
 
