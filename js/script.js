@@ -21,11 +21,6 @@ function main() {
     add_track_button.addEventListener("click", e => {
         app.createTrack("guitar");
     })
-
-    var scroll_controller = document.querySelector("#songScroll");
-    scroll_controller.addEventListener("input", e => {
-
-    })
 }
 
 class MusicSequencer {
@@ -39,8 +34,6 @@ class MusicSequencer {
         this.audio_buffers = [];
         this.beat_length = 250;
         // UI properties
-        this.scrollbar;
-        this.scroll_step;
 
         // Main data containers
         this.tracks = [];
@@ -50,7 +43,6 @@ class MusicSequencer {
     start() {
         this.loadSounds();
         this.createTrack("piano");
-        this.initScroll();
     }
 
     loadSounds() {
@@ -77,16 +69,6 @@ class MusicSequencer {
                 .then(decoded_sounds => {
                     this.sounds[instr] = decoded_sounds;
                 });   
-            })
-        })
-    }
-
-    initScroll() {
-        this.scrollbar = document.querySelector("#songScroll");
-        this.scrollbar.addEventListener("input", e => {
-            this.tracks.forEach(track => {
-                var scroll_step = (track.canvas_container.offsetWidth + 40 - track.container.offsetWidth) / 200;
-                track.canvas_container.style.left = "-" + (this.scrollbar.value * scroll_step) + "px"
             })
         })
     }

@@ -16,7 +16,6 @@ html, body {
     position: absolute;
     width: 100%;
     height: 100%;
-    overflow-x: hidden;
 }
 
 #trackInsertPoint {
@@ -55,8 +54,7 @@ html, body {
 }
 
 .track-fixed-header {
-    position: sticky;
-    left: 0px;
+    width: 100%;
     height: 40px;
     color: white;
     font-weight: bold;
@@ -65,8 +63,8 @@ html, body {
 
 .track-label {
     display: inline-flex;
-    position: absolute;
-    left: 0px;
+    position: sticky;
+    left: 20px;
     width: auto;
     height: 100%;
     align-items: center;
@@ -76,8 +74,8 @@ html, body {
 
 .track-options {
     display: inline-flex;
-    position: absolute;
-    right: 0px;
+    position: sticky;
+    left: 120px;
     width: auto;
     height: 100%;
     align-items: center;
@@ -90,6 +88,7 @@ html, body {
     display: inline-block;
     background-color: black;
     padding: 5px;
+    margin-right: 20px;
 }
 
 .track-canvas {
