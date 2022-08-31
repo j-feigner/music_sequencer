@@ -24,12 +24,12 @@ html, body {
 
 .ui {
     position: fixed;
-    left: 50px;
-    bottom: 50px;
+    left: 0px;
+    bottom: 0px;
 }
 
 .ui .controls {
-    background-color: black;
+    background-color: grey;
     padding: 12px;
 }
 
@@ -38,15 +38,68 @@ html, body {
     width: 80px;
     height: 80px;
     vertical-align: top;
+    border: none;
+    border-radius: 40px;
+    background-color: rgb(116, 116, 175);
+    cursor: pointer;
+}
+
+.ui-button:hover {
+    background-color: rgb(104, 104, 141);
+}
+
+.ui-button:active {
+    background-color: rgb(74, 74, 90)
 }
 
 .ui-button img {
-    width: 100%;
+    height: 30px;
+}
+
+#playSong img {
+    position: relative;
+    height: 36px;
+    left: 6%;
+}
+
+.controls-slider-block {
+    display: inline-block;
     height: 100%;
 }
 
-#songScroll {
-    width: 300px;
+.slider-group {
+    display: block;
+    height: 20px;
+    padding: 5px;
+}
+
+.slider-group .inline-container {
+    display: inline-block;
+    height: inherit;
+}
+
+.slider-group img {
+    position: relative;
+    top: 0px;
+    display: inline-block;
+    width: 24px;
+    height: 20px;
+}
+
+.slider-group input {
+    display: inline-block;
+    position: relative;
+    top: 0px;
+    height: 100%;
+    margin: 0px;
+}
+
+.slider-group .slider-display {
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+    vertical-align: top;
+    font-size: 14px;
 }
 
 .track-container {

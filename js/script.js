@@ -21,6 +21,18 @@ function main() {
     add_track_button.addEventListener("click", e => {
         app.createTrack("guitar");
     })
+
+    var volume_control = document.querySelector("#songGain input");
+    var volume_display = document.querySelector("#songGain .slider-display");
+    volume_control.addEventListener("input", e => {
+        volume_display.innerHTML = e.target.value;
+    })
+
+    var tempo_control = document.querySelector("#songTempo input");
+    var tempo_display = document.querySelector("#songTempo .slider-display");
+    tempo_control.addEventListener("input", e => {
+        tempo_display.innerHTML = e.target.value + "bpm";
+    })
 }
 
 class MusicSequencer {
