@@ -8,7 +8,9 @@ function main() {
 
     var play_button = document.querySelector("#playSong");
     play_button.addEventListener("click", e => {
-        app.stopSong();
+        if(app.song_is_playing) {
+            app.stopSong();
+        }
         app.playSong();
     });
 
@@ -50,6 +52,8 @@ class MusicSequencer {
         // Main data containers
         this.tracks = [];
         this.sounds = {};
+
+        this.song_is_playing = false;
     }
 
     start() {
@@ -101,6 +105,8 @@ class MusicSequencer {
     }
 
     playSong() {
+        this.song_is_playing = true;
+
         // Create buffer nodes for each filled note in track grid
         var buffers = [];
         this.tracks.forEach(track => {
@@ -134,14 +140,13 @@ class MusicSequencer {
     }
 
     stopSong() {
+        this.song_is_playing = false;
+
         // Cancel any animation currently active
-        this.tracks.forEach(track => track.stopAnimation());
-        // Refresh grid to remove any animation artifacts
         this.tracks.forEach(track => {
-            track.grid.cells.forEach(cell => {
-                cell.is_playing = false;
-            })
-            track.grid.draw();
+            track.stopAnimation();
+            track.toggleBeat(track.active_beat);
+            track.active_beat = null;
         })
         // Stop all scheduled audio buffers and reset buffer array
         this.audio_buffers.forEach(buffer => {
@@ -161,6 +166,8 @@ class MusicTrack {
         this.grid;
         this.reverb = false;
         this.reverb_node;
+
+        this.active_beat = null;
         this.animation;
         
         this.initGrid(grid_canvas);
@@ -176,7 +183,7 @@ class MusicTrack {
         canvas.width = columns * cell_width + 2;
         canvas.height = rows * cell_height + 2;
         this.grid = new CanvasGrid(canvas, canvas.width, canvas.height, rows, columns, cell_width, cell_height, 2);
-        this.setBeatBaseColors(new Color(240, 240, 240), new Color(220, 220, 220), 4);
+        this.setBeatBaseColors("rgb(240,240,240)", "rgb(220,220,220)", 4);
         this.grid.draw();
     }
 
@@ -211,7 +218,7 @@ class MusicTrack {
     }
 
     playAnimation(tempo) {
-        var start, active_beat;
+        var start;
         var beats = this.grid.getColumns().length;
 
         var step = function(timestamp) {
@@ -228,20 +235,20 @@ class MusicTrack {
     
             // Animation has finished, clear last beat and exit function
             if(current_beat >= beats) {
-                this.toggleBeat(active_beat);
+                this.toggleBeat(this.active_beat);
                 window.cancelAnimationFrame(this.animation);
                 return null;
             }
             // Update grid if progress has moved to a new beat
-            if(current_beat != active_beat) {
+            if(current_beat != this.active_beat) {
                 // If not the first beat, clear previous beat
                 if(current_beat != 0) {
-                    this.toggleBeat(active_beat);
+                    this.toggleBeat(this.active_beat);
                 }
                 // Proceed with next beat
                 this.toggleBeat(current_beat);
                 // Set active beat
-                active_beat = current_beat;
+                this.active_beat = current_beat;
             }
     
             this.animation = window.requestAnimationFrame(step);
@@ -315,7 +322,7 @@ class CanvasGrid {
             for(var j = 0; j < this.num_rows; j++) {
                 var cell_x = this.rect.x + this.column_width * i;
                 var cell_y = this.rect.y + this.row_height * j;
-                cells.push(new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width, this.colors[j]));
+                cells.push(new CanvasGridCell(cell_x, cell_y, this.column_width, this.row_height, this.line_width, this.colors[j].toString()));
             }
         }
         return cells;
@@ -379,7 +386,7 @@ class CanvasGridCell {
         this.rect = new Rectangle(x, y, width, height);
         this.line_width = line_width;
 
-        this.base_color = new Color(240, 240, 240);
+        this.base_color;
         this.fill_color = fill_color;
 
         this.color = this.base_color;
@@ -402,15 +409,15 @@ class CanvasGridCell {
         // Modify color based on playing animation status
         if(this.is_playing) {
             if(this.is_filled) {
-                this.color = new Color(255, 255, 255);
+                this.color = "rgb(255,255,255)";
             } else {
-                this.color = new Color(170, 170, 200);
+                this.color = "rgb(170,170,200)";
             }
         }
 
-        ctx.fillStyle = this.color.toString(true);
+        ctx.fillStyle = this.color;
 
-        ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
+        //ctx.clearRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h)
 
         ctx.beginPath();
         ctx.rect(this.rect.x, this.rect.y, this.rect.w, this.rect.h);
