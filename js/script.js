@@ -21,6 +21,9 @@ function main() {
 
     var add_track_button = document.querySelector("#addTrack");
     add_track_button.addEventListener("click", e => {
+        if(app.song_is_playing) {
+            app.stopSong();
+        }
         app.createTrack("guitar");
     })
 

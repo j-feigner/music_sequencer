@@ -1,10 +1,61 @@
 <div class="track-container">
     <div class="track-fixed-header">
-        <span class="track-label">Test</span>
-        <span class="track-options">
-            <input type="checkbox" class="reverb-switch">
-            <span class="toggle-slider">Reverb</span>
-        </span>
+        <div class="track-header-container">
+            <div class="track-label">New Track / Piano</div>
+            <div class="track-volume">
+                <div class="slider-group" class="track-gain">
+                    <img src="images/volume_icon">
+                    <input class="range-slider" type="range" min="0" max="100" step="1" value="100">
+                    <div class="slider-display">100</div>
+                </div>
+            </div>
+            <div class="track-options">
+                <div class="track-options-label">
+                    <div class="input-pair">
+                        <label>Options</label>
+                        <button>-></button>
+                    </div>
+                </div>
+                <div class="track-options-dropdown">
+                    <div class="dropdown-row track-name">
+                        <div class="input-pair">
+                            <label>Track Name </label>
+                            <input type="text">
+                        </div>
+                    </div>
+                    <div class="dropdown-row track-instrument">
+                        <div class="input-pair">
+                            <label>Instrument </label>
+                            <select>
+                                <option value="piano">Piano</option>
+                                <option value="guitar">Guitar</option>
+                                <option value="i3">Instr 3</option>
+                                <option value="i4">Instr 4</option>
+                                <option value="i5">Instr 5</option>
+                            </select>
+                        </div>  
+                    </div>
+                    <div class="dropdown-row track-reverb">
+                        <div class="input-pair">
+                            <label>Reverb </label>
+                            <div class="checkbox-slider">
+                                <input type="checkbox" class="reverb-switch">
+                                <div class="checkbox-slider-body"></div>
+                                <div class="checkbox-slider-thumb"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="track-options-bottom-buttons">
+                        <div class="track-options-save">
+                            <button>Save</button>
+                        </div>
+                        <div class="track-options-cancel">
+                            <button>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="canvas-container">
         <canvas class="track-canvas"></canvas>
