@@ -230,7 +230,7 @@ html, body {
 
 .track-reverb .checkbox-slider {
     position: relative;
-    width: 44px;
+    width: 40px;
     height: 22px;
 }
 
@@ -259,7 +259,7 @@ html, body {
 }
 
 .reverb-switch:checked + .checkbox-slider-body + .checkbox-slider-thumb {
-    transform: translateX(22px);
+    transform: translateX(18px);
 }
 
 /* Save, Cancel buttons at bottom of dropdown menu */

@@ -46,6 +46,7 @@ class MusicSequencer {
         // DOM properties
         this.container = document.querySelector(".app-container");
         this.track_insert_point = document.querySelector("#trackInsertPoint");
+        this.track_html = null;
         // Song playback and animation properties
         this.animation = null;
         this.audio_buffers = [];
@@ -53,6 +54,7 @@ class MusicSequencer {
         // UI properties
 
         // Main data containers
+        this.instruments = [];
         this.tracks = [];
         this.sounds = {};
 
@@ -60,51 +62,76 @@ class MusicSequencer {
     }
 
     start() {
-        this.loadSounds();
-        this.createTrack("piano");
+        Promise.all([
+            this.loadSounds(), 
+            this.loadTrackHTML()
+        ])
+        .then(success => {
+            console.log(success);
+            this.createTrack("piano");
+        })
+        .catch(error => {
+            console.log(error);
+        })
     }
 
     loadSounds() {
-        var instruments = null;
-
         // Fetch all instrument folder names
-        fetch("php/dir_contents.php?dir=../sounds", {method: "GET"})
+        return fetch("php/dir_contents.php?dir=../sounds", {method: "GET"})
         .then(response => response.json())
-        .then(folder_names => {
-            instruments = folder_names;
-            // Fetch and decode all sound files for each instrument folder
-            instruments.forEach(instr => {
-                fetch("php/dir_contents.php?dir=../sounds/" + instr, {method: "GET"})
-                .then(response => response.json())
-                .then(file_names => {
-                    var urls = file_names.map(name => "sounds/" + instr + "/" + name);
-                    var fetches = urls.map(url => fetch(url).then(response => response.arrayBuffer()));
-                    return Promise.all(fetches);
-                })
-                .then(buffers => {
-                    var sounds = buffers.map(buffer => this.audio_ctx.decodeAudioData(buffer));
-                    return Promise.all(sounds);
-                })
-                .then(decoded_sounds => {
-                    this.sounds[instr] = decoded_sounds;
-                });   
+        // Capture folder names and for each, fetch file names in instr directory
+        .then(instr_folder_names => {
+            this.instruments = instr_folder_names;
+            var fetches = instr_folder_names.map(instr => {
+                return fetch("php/dir_contents.php?dir=../sounds/" + instr, {method: "GET"})
+                .then(response => response.json());
             })
+            return Promise.all(fetches);
+        })
+        // Fetch all mp3 files by name, grouped by instr
+        .then(file_names => {          
+            return Promise.all(file_names.map((folder, index) => {
+                return Promise.all(folder.map(file => {
+                    return fetch("sounds/" + this.instruments[index] + "/" + file)
+                    .then(response => response.arrayBuffer());
+                }));
+            }));
+        })
+        // Decode all mp3 array buffers into usable sounds
+        .then(array_buffers => {
+            return Promise.all(array_buffers.map(buffers => {
+                return Promise.all(buffers.map(buffer => {
+                    return this.audio_ctx.decodeAudioData(buffer);
+                }));
+            }));
+        })
+        // Assign decoded sounds to sounds object
+        .then(decoded_sounds => {
+            decoded_sounds.forEach((sound, index) => {
+                this.sounds[this.instruments[index]] = sound;
+            });
+            return Promise.resolve("All sounds loaded successfully");
+        })
+    }
+
+    loadTrackHTML() {
+        return fetch("html/music_track.html", {method: "GET"})
+        .then(response => response.text())
+        .then(html => {
+            this.track_html = html;
+            return Promise.resolve("Track template loaded successfully");
         })
     }
 
     createTrack(instrument) {
-        fetch("html/music_track.html", {method: "GET"})
-        .then(response => response.text())
-        .then(html => {
-            var div = document.createElement("div");
-            div.innerHTML = html;
+        var div = document.createElement("div");
+        div.innerHTML = this.track_html;
 
-            var canvas = div.querySelector(".track-canvas");
-            var track = new MusicTrack(div.firstChild, this.audio_ctx, instrument, canvas);
-    
-            this.tracks.push(track);
-            this.container.insertBefore(div.firstChild, this.track_insert_point);
-        })
+        var canvas = div.querySelector(".track-canvas");
+        var track = new MusicTrack(div.firstChild, this.audio_ctx, instrument, canvas);
+
+        this.tracks.push(track);
+        this.container.insertBefore(div.firstChild, this.track_insert_point);
     }
 
     playSong() {
@@ -211,7 +238,7 @@ class MusicTrack {
 
     initReverb(ctx) {
         this.reverb_node = ctx.createConvolver();
-        fetch("sounds/impulse_response/JFKUnderpass.wav", {method: "GET"})
+        fetch("impulse_responses/JFKUnderpass.wav", {method: "GET"})
         .then(response => response.arrayBuffer())
         .then(array_buffer => ctx.decodeAudioData(array_buffer))
         .then(data => {
@@ -265,6 +292,10 @@ class MusicTrack {
     }
 
     toggleBeat(index) {
+        if(index == null) {
+            return
+        }
+
         var col = this.grid.getColumn(index);
         col.forEach(cell => {
             cell.is_playing = !cell.is_playing;
