@@ -234,6 +234,24 @@ class MusicTrack {
         this.container.querySelector(".reverb-switch").addEventListener("input", e => {
             this.reverb = !this.reverb;
         })
+
+        // Track options dropdown menu activation
+        var dropdown = this.container   
+            .querySelector(".track-options-dropdown-button");
+        var dropdown_button = dropdown
+            .querySelector(".checkbox-dropdown input");
+        var options_menu = this.container
+            .querySelector(".track-options-dropdown");
+
+        dropdown_button.addEventListener("change", e => {
+            if(dropdown_button.checked) {
+                dropdown.classList.add("selected");
+                options_menu.classList.add("visible");
+            } else {
+                dropdown.classList.remove("selected");
+                options_menu.classList.remove("visible");
+            }
+        })
     }
 
     initReverb(ctx) {
