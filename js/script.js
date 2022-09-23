@@ -56,7 +56,7 @@ class MusicSequencer {
         // Main data containers
         this.instruments = [];
         this.tracks = [];
-        this.sounds = {};
+        this.sounds = {}; // Format: { instrument_name : sound_array }
 
         this.song_is_playing = false;
     }
@@ -191,12 +191,17 @@ class MusicTrack {
         // DOM properties
         this.container = container;
         this.canvas_container = container.querySelector(".canvas-container");
-
+        this.options_dropdown;
+        this.options_menu;
+        
+        this.name = "New Track";
+        this.gain = 100;
         this.instrument = instrument;
-        this.grid;
         this.reverb = false;
+        this.grid;
         this.reverb_node;
 
+        // Animation properties
         this.active_beat = null;
         this.animation;
         
@@ -221,37 +226,73 @@ class MusicTrack {
         canvas.addEventListener("click", event => {
             var cell = this.grid.checkHit(event.offsetX, event.offsetY);
             if(cell) {
-                if(cell.is_filled) {
-                    cell.color = "rgb(255, 255, 255)";
-                } else {
-                    cell.color = "rgb(125, 85, 110)";
-                }
                 cell.is_filled = !cell.is_filled;
                 cell.draw(this.grid.ctx);
             }
         })
 
-        this.container.querySelector(".reverb-switch").addEventListener("input", e => {
-            this.reverb = !this.reverb;
-        })
-
         // Track options dropdown menu activation
-        var dropdown = this.container   
+        this.options_dropdown = this.container   
             .querySelector(".track-options-dropdown-button");
-        var dropdown_button = dropdown
+        var dropdown_button = this.options_dropdown
             .querySelector(".checkbox-dropdown input");
-        var options_menu = this.container
+        this.options_menu = this.container
             .querySelector(".track-options-dropdown");
 
         dropdown_button.addEventListener("change", e => {
             if(dropdown_button.checked) {
-                dropdown.classList.add("selected");
-                options_menu.classList.add("visible");
+                this.showOptions();
             } else {
-                dropdown.classList.remove("selected");
-                options_menu.classList.remove("visible");
+                this.hideOptions();
             }
         })
+
+        var save_button = this.options_menu
+            .querySelector(".track-options-save button");
+        save_button.addEventListener("click", e => {
+            this.saveOptions();
+        })
+    }
+
+    saveOptions() {
+        var track_name_input = this.options_menu
+            .querySelector(".track-name input");
+        this.name = track_name_input.value;
+
+        var track_instrument_select = this.options_menu 
+            .querySelector(".track-instrument select")
+        this.instrument = track_instrument_select.value;
+
+        // Update track label
+        this.container.querySelector(".track-label-name").innerHTML = this.name;
+        this.container.querySelector(".track-label-instr i").innerHTML = this.instrument;
+
+        var track_reverb_switch = this.options_menu
+            .querySelector(".track-reverb input");
+        this.reverb = track_reverb_switch.checked;
+    }
+
+    showOptions() {
+        // Update all values according to current track state
+        var track_name_input = this.options_menu
+            .querySelector(".track-name input");
+        track_name_input.value = this.name;
+
+        var track_instrument_select = this.options_menu 
+            .querySelector(".track-instrument select")
+        track_instrument_select.value = this.instrument;
+
+        var track_reverb_switch = this.options_menu
+            .querySelector(".track-reverb input");
+        track_reverb_switch.checked = this.reverb;
+
+        this.options_dropdown.classList.add("selected");
+        this.options_menu.classList.add("visible");
+    }
+
+    hideOptions() {
+        this.options_dropdown.classList.remove("selected");
+        this.options_menu.classList.remove("visible");
     }
 
     initReverb(ctx) {

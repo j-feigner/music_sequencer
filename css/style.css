@@ -3,7 +3,7 @@ html, body {
     height: 100%;
     border: 0px;
     margin: 0px;
-    background-color: rgb(200, 230, 255);
+    background-color: rgb(163, 201, 231);
     font-family: 'Raleway', sans-serif;
 }
 
@@ -30,6 +30,7 @@ html, body {
     padding: 14px;
     background-color: rgb(94, 94, 94);
     border-radius: 0px 6px 0px 0px;
+    z-index: 100;
 }
 
 .ui .controls {
@@ -88,8 +89,8 @@ html, body {
 .slider-group img {
     position: relative;
     top: 0px;
-    width: 24px;
-    height: 20px;
+    width: 20px;
+    height: 18px;
 }
 
 .range-slider {
@@ -97,7 +98,7 @@ html, body {
     height: 20px;
     margin: 0px;
     background-color: rgb(126, 126, 126);
-    margin: 0px 5px 0px 5px;
+    margin: 0px 7px 0px 7px;
     transition: .2s;
 }
 
@@ -119,6 +120,7 @@ html, body {
 }
 
 .slider-group .slider-display {
+    width: 30px;
     height: 20px;
     line-height: 20px;
     vertical-align: top;
@@ -155,7 +157,19 @@ html, body {
     left: 20px;
     height: 100%;
     align-items: center;
-    padding: 0px 10px 0px 0px;
+    padding: 0px 15px 0px 5px;
+}
+
+.track-label-name {
+    padding-right: 5px;
+}
+
+.track-label-break {
+    padding: 0px 5px 0px 5px;
+}
+
+.track-label-instr {
+    padding-left: 5px;
 }
 
 .track-volume {
