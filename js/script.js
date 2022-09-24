@@ -149,7 +149,7 @@ class MusicSequencer {
             if(track.reverb) {
                 destination = track.reverb_node;
             } else {
-                destination = this.audio_ctx.destination;
+                destination = track.gain_node;
             }
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
@@ -212,8 +212,8 @@ class MusicTrack {
         
         this.initGrid(grid_canvas);
         this.initEvents(grid_canvas);
-        this.initReverb(audio_ctx);
         this.initGain(audio_ctx);
+        this.initReverb(audio_ctx);
     }
 
     // Initializes CanvasGrid object according to default values
@@ -270,8 +270,15 @@ class MusicTrack {
             .querySelector(".track-volume .slider-display")
         this.gain_input.addEventListener("input", e => {
             this.gain_display.innerHTML = e.target.value;
-            this.gain = e.target.value;
+            this.gain_node.gain.value = e.target.value / 100;
         })
+    }
+
+    // Creates gain node with the Web Audio API to allow for individual track volume control 
+    // Audio Path: sound -> track-reverb -> track-gain -> master-gain -> output
+    initGain(ctx) {
+        this.gain_node = ctx.createGain();
+        this.gain_node.connect(ctx.destination);
     }
 
     // Creates convolver node with the Web Audio API for IR-based reverb effect
@@ -283,14 +290,8 @@ class MusicTrack {
         .then(array_buffer => ctx.decodeAudioData(array_buffer))
         .then(data => {
             this.reverb_node.buffer = data;
-            this.reverb_node.connect(ctx.destination);
+            this.reverb_node.connect(this.gain_node);
         });
-    }
-
-    // Creates gain node with the Web Audio API to allow for individual track volume control 
-    // Audio Path: sound -> track-reverb -> track-gain -> master-gain -> output
-    initGain(ctx) {
-        this.gain_node = ctx.createGain();
     }
 
     // Main animation loop, called by play button event listener
