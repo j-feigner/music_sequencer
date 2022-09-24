@@ -36,7 +36,7 @@ function main() {
     var tempo_control = document.querySelector("#songTempo input");
     var tempo_display = document.querySelector("#songTempo .slider-display");
     tempo_control.addEventListener("input", e => {
-        tempo_display.innerHTML = e.target.value + "bpm";
+        tempo_display.innerHTML = e.target.value;
     })
 }
 
@@ -194,8 +194,13 @@ class MusicTrack {
         this.options_dropdown;
         this.options_menu;
         
+        // Volume control
+        this.gain_node;
+        this.gain_value = 100;
+        this.gain_input;
+        this.gain_display;
+
         this.name = "New Track";
-        this.gain = 100;
         this.instrument = instrument;
         this.reverb = false;
         this.grid;
@@ -208,8 +213,12 @@ class MusicTrack {
         this.initGrid(grid_canvas);
         this.initEvents(grid_canvas);
         this.initReverb(audio_ctx);
+        this.initGain(audio_ctx);
     }
 
+    // Initializes CanvasGrid object according to default values
+    // TODO: These should be paramaterized to allow more control over grid display
+    //       and to allow for differing dimensions of track grids (percussion etc.)
     initGrid(canvas) {
         var rows = 13;
         var columns = 64;
@@ -222,6 +231,7 @@ class MusicTrack {
         this.grid.draw();
     }
 
+    // Initialize all event listeners for track interface
     initEvents(canvas) {
         canvas.addEventListener("click", event => {
             var cell = this.grid.checkHit(event.offsetX, event.offsetY);
@@ -240,6 +250,7 @@ class MusicTrack {
             .querySelector(".track-options-dropdown");
 
         dropdown_button.addEventListener("change", e => {
+            this.updateOptions();
             if(dropdown_button.checked) {
                 this.showOptions();
             } else {
@@ -252,49 +263,19 @@ class MusicTrack {
         save_button.addEventListener("click", e => {
             this.saveOptions();
         })
+
+        this.gain_input = this.container
+            .querySelector(".track-volume input");
+        this.gain_display = this.container
+            .querySelector(".track-volume .slider-display")
+        this.gain_input.addEventListener("input", e => {
+            this.gain_display.innerHTML = e.target.value;
+            this.gain = e.target.value;
+        })
     }
 
-    saveOptions() {
-        var track_name_input = this.options_menu
-            .querySelector(".track-name input");
-        this.name = track_name_input.value;
-
-        var track_instrument_select = this.options_menu 
-            .querySelector(".track-instrument select")
-        this.instrument = track_instrument_select.value;
-
-        // Update track label
-        this.container.querySelector(".track-label-name").innerHTML = this.name;
-        this.container.querySelector(".track-label-instr i").innerHTML = this.instrument;
-
-        var track_reverb_switch = this.options_menu
-            .querySelector(".track-reverb input");
-        this.reverb = track_reverb_switch.checked;
-    }
-
-    showOptions() {
-        // Update all values according to current track state
-        var track_name_input = this.options_menu
-            .querySelector(".track-name input");
-        track_name_input.value = this.name;
-
-        var track_instrument_select = this.options_menu 
-            .querySelector(".track-instrument select")
-        track_instrument_select.value = this.instrument;
-
-        var track_reverb_switch = this.options_menu
-            .querySelector(".track-reverb input");
-        track_reverb_switch.checked = this.reverb;
-
-        this.options_dropdown.classList.add("selected");
-        this.options_menu.classList.add("visible");
-    }
-
-    hideOptions() {
-        this.options_dropdown.classList.remove("selected");
-        this.options_menu.classList.remove("visible");
-    }
-
+    // Creates convolver node with the Web Audio API for IR-based reverb effect
+    // Audio Path: sound -> track-reverb -> track-gain -> master-gain -> output
     initReverb(ctx) {
         this.reverb_node = ctx.createConvolver();
         fetch("impulse_responses/JFKUnderpass.wav", {method: "GET"})
@@ -306,6 +287,13 @@ class MusicTrack {
         });
     }
 
+    // Creates gain node with the Web Audio API to allow for individual track volume control 
+    // Audio Path: sound -> track-reverb -> track-gain -> master-gain -> output
+    initGain(ctx) {
+        this.gain_node = ctx.createGain();
+    }
+
+    // Main animation loop, called by play button event listener
     playAnimation(tempo) {
         var start;
         var beats = this.grid.getColumns().length;
@@ -350,6 +338,8 @@ class MusicTrack {
         window.cancelAnimationFrame(this.animation);
     }
 
+    // Helper function used in animation loop for setting a given
+    // column (beat) to playing status and draw cells
     toggleBeat(index) {
         if(index == null) {
             return
@@ -362,6 +352,8 @@ class MusicTrack {
         })
     }
 
+    // Alternates cell base colors on increment
+    // Used to give visual demarcation of beat subdivisions
     setBeatBaseColors(c1, c2, increment) {
         var beat_switch = false;
 
@@ -377,6 +369,54 @@ class MusicTrack {
                 }
             })
         })
+    }
+    
+    // Updates track data with given options menu form values
+    // Called by save button event listener
+    saveOptions() {
+        var track_name_input = this.options_menu
+            .querySelector(".track-name input");
+        this.name = track_name_input.value;
+
+        var track_instrument_select = this.options_menu 
+            .querySelector(".track-instrument select")
+        this.instrument = track_instrument_select.value;
+
+        // Update track label
+        this.container.querySelector(".track-label-name").innerHTML = this.name;
+        this.container.querySelector(".track-label-instr i").innerHTML = this.instrument;
+
+        var track_reverb_switch = this.options_menu
+            .querySelector(".track-reverb input");
+        this.reverb = track_reverb_switch.checked;
+    }
+
+    // Updates options menu to default values based on current track state
+    // Called by options dropdown button on menu showing/hiding
+    updateOptions() {
+        var track_name_input = this.options_menu
+            .querySelector(".track-name input");
+        track_name_input.value = this.name;
+
+        var track_instrument_select = this.options_menu 
+            .querySelector(".track-instrument select")
+        track_instrument_select.value = this.instrument;
+
+        var track_reverb_switch = this.options_menu
+            .querySelector(".track-reverb input");
+        track_reverb_switch.checked = this.reverb;
+    }
+
+    // Set CSS classes for visible options menu styling
+    showOptions() {
+        this.options_dropdown.classList.add("selected");
+        this.options_menu.classList.add("visible");
+    }
+
+    // Remove CSS classes to hide options menu with default styling
+    hideOptions() {
+        this.options_dropdown.classList.remove("selected");
+        this.options_menu.classList.remove("visible");
     }
 }
 

@@ -71,10 +71,16 @@ html, body {
 
 .controls-slider-block {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
     top: 50%;
     transform: translateY(-50%);
     padding-left: 10px;
+}
+
+.controls-slider-block .slider-group {
+    padding: 5px 0px 5px 0px;
 }
 
 /* Custom Slider Input*/
