@@ -4,12 +4,44 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="site-wrapper">
-        <div class="app-container"></div>
+        <div class="app-container">
+            <div id="trackInsertPoint"></div>
+            <div class="ui">
+                <div class="controls">
+                    <button type="button" id= "addTrack" class="ui-button">
+                        <img src="images/plus_icon.svg">
+                    </button>
+                    <button type="button" id="playSong" class="ui-button">
+                        <img src="images/play_icon.svg">
+                    </button>
+                    <button type="button" id="stopSong" class="ui-button">
+                        <img src="images/stop_icon.svg">
+                    </button>
+                    <div class="controls-slider-block">
+                        <div class="slider-group" id="songGain">
+                            <img src="images/volume_icon">
+                            <input class="range-slider" type="range" min="0" max="100" step="1" value="100">
+                            <div class="slider-display">100</div>
+                        </div>
+                        <div class="slider-group" id="songTempo">
+                            <img src="images/tempo_icon">
+                            <input class="range-slider" type="range" min="40" max="200" step="5" value="90">
+                            <div class="slider-display">90</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="js/script.js"></script>
+    <script src="js/rectangle.js"></script>
+    <script src="js/color.js"></script>
 </body>
 </html>

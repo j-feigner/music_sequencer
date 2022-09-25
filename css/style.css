@@ -3,13 +3,414 @@ html, body {
     height: 100%;
     border: 0px;
     margin: 0px;
-    background-color: slategray;
+    background-color: rgb(163, 201, 231);
+    font-family: 'Raleway', sans-serif;
+}
+
+.site-wrapper {
+    height: 100%;
+    width: 100%;
 }
 
 .app-container {
     position: absolute;
-    top: 10%;
-    height: 90%;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    width: 100%;
+    height: 100%;
+}
+
+#trackInsertPoint {
+    height: 200px;
+}
+
+.ui {
+    position: fixed;
+    height: 80px;
+    left: 0px;
+    bottom: 0px;
+    padding: 14px;
+    background-color: rgb(94, 94, 94);
+    border-radius: 0px 6px 0px 0px;
+    z-index: 100;
+}
+
+.ui .controls {
+    position: relative;
+    height: 80px;
+    vertical-align: middle;
+}
+
+.ui-button {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    vertical-align: top;
+    border: none;
+    border-radius: 40px;
+    background-color: rgb(116, 116, 175);
+    cursor: pointer;
+    transition: .2s;
+}
+
+.ui-button:hover {
+    background-color: rgb(104, 104, 141);
+}
+
+.ui-button:active {
+    background-color: rgb(74, 74, 90);
+}
+
+.ui-button img {
+    height: 30px;
+}
+
+#playSong img {
+    position: relative;
+    height: 36px;
+    left: 6%;
+}
+
+.controls-slider-block {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-left: 10px;
+}
+
+.controls-slider-block .slider-group {
+    padding: 5px 0px 5px 0px;
+}
+
+/* Custom Slider Input*/
+.slider-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 100%;
+    align-items: center;
+}
+
+.slider-group img {
+    position: relative;
+    top: 0px;
+    width: 20px;
+    height: 18px;
+}
+
+.range-slider {
+    -webkit-appearance: none;
+    height: 20px;
+    margin: 0px;
+    background-color: rgb(126, 126, 126);
+    margin: 0px 7px 0px 7px;
+    transition: .2s;
+}
+
+.range-slider:hover {
+    background-color: rgb(105, 105, 105);
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    background-color: rgb(131, 89, 89);
+    transition: .2s;
+    cursor: pointer;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    background-color: rgb(207, 132, 46);
+}
+
+.slider-group .slider-display {
+    width: 30px;
+    height: 20px;
+    line-height: 20px;
+    vertical-align: top;
+    font-size: 14px;
+    color: white;
+}
+
+/* Track Styling */
+.track-container {
+    padding: 20px;
+}
+
+.track-fixed-header {
+    position: relative;
+    width: 2000px;
+    height: 40px;
+    color: darkslategrey;
+    font-weight: bold;
+    font-size: 16pt;
+    z-index: 1;
+}
+
+.track-header-container {
+    display: inline-flex;
+    position: sticky;
+    left: 20px;
+    height: 100%;
+    width: auto;
+    vertical-align: top;
+}
+
+.track-label {
+    display: inline-flex;
+    left: 20px;
+    height: 100%;
+    align-items: center;
+    padding: 0px 15px 0px 5px;
+}
+
+.track-label-name {
+    padding-right: 5px;
+}
+
+.track-label-break {
+    padding: 0px 5px 0px 5px;
+}
+
+.track-label-instr {
+    padding-left: 5px;
+}
+
+.track-volume {
+    padding: 0px 10px 0px 10px;
+}
+
+.track-options {
+    position: relative;
+}
+
+.track-options-dropdown-button.selected {
+    background-color: rgba(43, 43, 43, 0.925);
+    color: white;
+    transition: .3s;
+}
+
+.track-options-dropdown-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 10px 0px 10px;
+}
+
+.track-options-dropdown-button label {
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-dropdown {
+    position: relative;
+    top: 3px;
+    width: 20px;
+    height: 14px;
+    margin-left: 7px;
+}
+
+.checkbox-dropdown input {
+    -webkit-appearance: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    right: 0px;
+    margin: 0px;
+    background-color: none;
+    cursor: pointer;
+}
+
+.checkbox-dropdown img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    right: 0px;
+    margin: 0px;
+    pointer-events: none;
+    transition: .3s;
+}
+
+.checkbox-dropdown input:checked + img {
+    transform: translateY(-2px) rotate(180deg);
+}
+
+.track-options-dropdown {
+    position: absolute;
+    display: flex;
+    opacity: 0;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 10px;
+    top: 40px;
+    left: 0px;
+    background-color: rgba(43, 43, 43, 0.925);
+    filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.4));
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.track-options-dropdown.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity .3s;
+}
+
+.track-options-dropdown .dropdown-row {
+    height: 40px;
+    padding: 5px;
+}
+
+.track-options-dropdown .dropdown-row .input-pair {
+    height: 100%;
+}
+
+.track-options-dropdown label {
+    display: flex;
+    white-space: nowrap;
+    width: 100px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.track-options-dropdown input[type="text"] {
+    width: 100px;
+    height: 10px;
+    padding: 6px;
+    border: none;
+    border-radius: 3px;
+    outline: none;
+}
+
+.track-options-dropdown select {
+    width: 112px;
+    height: 22px;
+    padding-left: 5px;
+    border: none;
+    border-radius: 3px;
+    outline: none;
+}
+
+/* Track Reverb custom slider */
+.track-reverb .reverb-switch {
+    position: absolute;
+    opacity: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.track-reverb .checkbox-slider {
+    position: relative;
+    width: 40px;
+    height: 22px;
+}
+
+.track-reverb .checkbox-slider-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    transition: .4s;
+    pointer-events: none;
+}
+
+.track-reverb .checkbox-slider-thumb {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 18px;
+    height: 18px;
+    background-color: rgb(104, 62, 219);
+    transition: .4s;
+    pointer-events: none;
+}
+
+.reverb-switch:checked + .checkbox-slider-body {
+    background-color: rgb(179, 152, 255);
+}
+
+.reverb-switch:checked + .checkbox-slider-body + .checkbox-slider-thumb {
+    transform: translateX(18px);
+}
+
+/* Save, Cancel buttons at bottom of dropdown menu */
+.track-options-bottom-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 15px 0px 5px 0px;
+}
+
+.track-options-bottom-buttons div {
+    padding: 5px;
+}
+
+.track-options-bottom-buttons button {
+    width: 100px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    transition: .2s;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bolder;
+    font-size: 16px;
+    color: white;
+}
+
+.track-options-save button {
+    background-color: rgb(104, 62, 219);
+}
+
+.track-options-save button:hover {
+    background-color: rgb(89, 51, 161);
+}
+
+.track-options-save button:active {
+    background-color: rgb(74, 44, 158);
+}
+
+.track-options-cancel button {
+    background-color: rgb(122, 122, 122);
+}
+
+.track-options-cancel button:hover {
+    background-color: rgb(97, 97, 97);
+}
+
+.track-options-cancel button:active {
+    background-color: rgb(78, 78, 78);
+}
+
+/* Grid canvas styles */
+.canvas-container {
+    position: relative;
+    display: inline-block;
+    background-color: rgba(40, 40, 40, 0.8);
+    padding: 5px;
+    margin-right: 20px;
+    z-index: 0;
+    filter: drop-shadow(0px 0px 15px rgba(55, 90, 119, 0.5));
+    border-radius: 4px;
+}
+
+.track-canvas {
+    display: block;
+    position: relative;
+}
+
+/* General input styling for menus and forms */
+.input-pair {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
