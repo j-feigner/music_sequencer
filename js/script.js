@@ -377,6 +377,10 @@ class MusicTrack {
     saveOptions() {
         var track_name_input = this.options_menu
             .querySelector(".track-name input");
+        // Check name for valid input
+        if(this.checkNameForInvalid(track_name_input.value)) {
+            return alert("Track name must contain only letters, numbers, and spaces");
+        }
         this.name = track_name_input.value;
 
         var track_instrument_select = this.options_menu 
@@ -418,6 +422,14 @@ class MusicTrack {
     hideOptions() {
         this.options_dropdown.classList.remove("selected");
         this.options_menu.classList.remove("visible");
+    }
+
+    // Checks track name for invalid input characters
+    // Returns true if an invalid char is found
+    // Accepted: letters, numbers, single spaces
+    checkNameForInvalid(string) {
+        const regex = /[^\w" "]/g;
+        return regex.test(string);
     }
 }
 
