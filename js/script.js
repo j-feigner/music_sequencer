@@ -2,36 +2,7 @@ window.onload = main;
 
 function main() {
     var app = new MusicSequencer();
-    app.container = document.querySelector(".app-container");
-
     app.start();
-
-    var play_button = document.querySelector("#playSong");
-    play_button.addEventListener("click", e => {
-        if(app.song_is_playing) {
-            app.stopSong();
-        }
-        app.playSong();
-    });
-
-    var stop_button = document.querySelector("#stopSong");
-    stop_button.addEventListener("click", e => {
-        app.stopSong();
-    });
-
-    var add_track_button = document.querySelector("#addTrack");
-    add_track_button.addEventListener("click", e => {
-        if(app.song_is_playing) {
-            app.stopSong();
-        }
-        app.createTrack("guitar");
-    })
-
-    var volume_control = document.querySelector("#songGain input");
-    var volume_display = document.querySelector("#songGain .slider-display");
-    volume_control.addEventListener("input", e => {
-        volume_display.innerHTML = e.target.value;
-    })
 
     var tempo_control = document.querySelector("#songTempo input");
     var tempo_display = document.querySelector("#songTempo .slider-display");
@@ -47,6 +18,9 @@ class MusicSequencer {
         this.container = document.querySelector(".app-container");
         this.track_insert_point = document.querySelector("#trackInsertPoint");
         this.track_html = null;
+        // Master volume / gain
+        this.gain_node = this.audio_ctx.createGain();
+        this.gain_node.connect(this.audio_ctx.destination);
         // Song playback and animation properties
         this.animation = null;
         this.audio_buffers = [];
@@ -59,6 +33,8 @@ class MusicSequencer {
         this.sounds = {}; // Format: { instrument_name : sound_array }
 
         this.song_is_playing = false;
+
+        this.initUIEvents();
     }
 
     start() {
@@ -123,6 +99,36 @@ class MusicSequencer {
         })
     }
 
+    initUIEvents() {
+        var volume_control = this.container.querySelector("#songGain input");
+        var volume_display = this.container.querySelector("#songGain .slider-display");
+        volume_control.addEventListener("input", e => {
+            volume_display.innerHTML = e.target.value;
+            this.gain_node.gain.value = e.target.value / 100;
+        })
+
+        var play_button = this.container.querySelector("#playSong");
+        play_button.addEventListener("click", e => {
+            if(this.song_is_playing) {
+                this.stopSong();
+            }
+            this.playSong();
+        });
+    
+        var stop_button = this.container.querySelector("#stopSong");
+        stop_button.addEventListener("click", e => {
+            this.stopSong();
+        });
+    
+        var add_track_button = this.container.querySelector("#addTrack");
+        add_track_button.addEventListener("click", e => {
+            if(this.song_is_playing) {
+                this.stopSong();
+            }
+            this.createTrack("guitar");
+        })
+    }
+
     createTrack(instrument) {
         var div = document.createElement("div");
         div.innerHTML = this.track_html;
@@ -144,13 +150,15 @@ class MusicSequencer {
             var beats = track.grid.getColumns();
             var sounds = this.sounds[track.instrument];
             
-            // Set destination according to reverb status
+            // Check reverb, connect track destination to master gain node
             var destination;
             if(track.reverb) {
                 destination = track.reverb_node;
             } else {
                 destination = track.gain_node;
             }
+            destination.connect(this.gain_node);
+
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
                 beat.forEach((note, note_index) => {
