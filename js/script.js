@@ -3,12 +3,6 @@ window.onload = main;
 function main() {
     var app = new MusicSequencer();
     app.start();
-
-    var tempo_control = document.querySelector("#songTempo input");
-    var tempo_display = document.querySelector("#songTempo .slider-display");
-    tempo_control.addEventListener("input", e => {
-        tempo_display.innerHTML = e.target.value;
-    })
 }
 
 class MusicSequencer {
@@ -24,15 +18,12 @@ class MusicSequencer {
         // Song playback and animation properties
         this.animation = null;
         this.audio_buffers = [];
-        this.beat_length = 250;
-        // UI properties
-
+        this.beat_length = 166.67; // in milliseconds
+        this.song_is_playing = false;
         // Main data containers
         this.instruments = [];
         this.tracks = [];
         this.sounds = {}; // Format: { instrument_name : sound_array }
-
-        this.song_is_playing = false;
 
         this.initUIEvents();
     }
@@ -107,6 +98,14 @@ class MusicSequencer {
             this.gain_node.gain.value = e.target.value / 100;
         })
 
+        
+        var tempo_control = this.container.querySelector("#songTempo input");
+        var tempo_display = this.container.querySelector("#songTempo .slider-display");
+        tempo_control.addEventListener("input", e => {
+            tempo_display.innerHTML = e.target.value;
+            this.beat_length = 60 / e.target.value * 1000 / 4;
+        })
+
         var play_button = this.container.querySelector("#playSong");
         play_button.addEventListener("click", e => {
             if(this.song_is_playing) {
@@ -165,7 +164,7 @@ class MusicSequencer {
                         var source = this.audio_ctx.createBufferSource();
                         source.buffer = sounds[sounds.length - note_index - 1];
                         source.connect(destination);
-                        source.start(current_time + (0.25 * beat_index));
+                        source.start(current_time + (this.beat_length / 1000 * beat_index));
                         buffers.push(source);
                     }
                 })
@@ -352,7 +351,7 @@ class MusicTrack {
         })
     }
 
-    // Alternates cell base colors on increment
+    // Alternates cell base colors between c1 and c2 on increment
     // Used to give visual demarcation of beat subdivisions
     setBeatBaseColors(c1, c2, increment) {
         var beat_switch = false;
