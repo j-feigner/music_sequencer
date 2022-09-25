@@ -134,7 +134,7 @@ class MusicSequencer {
         div.innerHTML = this.track_html;
 
         var canvas = div.querySelector(".track-canvas");
-        var track = new MusicTrack(div.firstChild, this.audio_ctx, instrument, canvas);
+        var track = new MusicTrack(div.firstChild, this.audio_ctx, this.gain_node, instrument, canvas);
 
         this.tracks.push(track);
         this.container.insertBefore(div.firstChild, this.track_insert_point);
@@ -157,7 +157,6 @@ class MusicSequencer {
             } else {
                 destination = track.gain_node;
             }
-            destination.connect(this.gain_node);
 
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
@@ -195,7 +194,7 @@ class MusicSequencer {
 }
 
 class MusicTrack {
-    constructor(container, audio_ctx, instrument, grid_canvas) {
+    constructor(container, audio_ctx, audio_destination, instrument, grid_canvas) {
         // DOM properties
         this.container = container;
         this.canvas_container = container.querySelector(".canvas-container");
@@ -203,8 +202,8 @@ class MusicTrack {
         this.options_menu;
         
         // Volume control
-        this.gain_node;
-        this.gain_value = 100;
+        this.gain_node = audio_ctx.createGain();
+        this.gain_node.connect(audio_destination);
         this.gain_input;
         this.gain_display;
 
@@ -220,7 +219,6 @@ class MusicTrack {
         
         this.initGrid(grid_canvas);
         this.initEvents(grid_canvas);
-        this.initGain(audio_ctx);
         this.initReverb(audio_ctx);
     }
 
@@ -280,13 +278,6 @@ class MusicTrack {
             this.gain_display.innerHTML = e.target.value;
             this.gain_node.gain.value = e.target.value / 100;
         })
-    }
-
-    // Creates gain node with the Web Audio API to allow for individual track volume control 
-    // Audio Path: sound -> track-reverb -> track-gain -> master-gain -> output
-    initGain(ctx) {
-        this.gain_node = ctx.createGain();
-        this.gain_node.connect(ctx.destination);
     }
 
     // Creates convolver node with the Web Audio API for IR-based reverb effect
