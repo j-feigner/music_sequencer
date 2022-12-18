@@ -24,6 +24,8 @@ class MusicSequencer {
         this.instruments = [];
         this.tracks = [];
         this.sounds = {}; // Format: { instrument_name : sound_array }
+        // Other properties
+        this.max_tracks = 6;
 
         this.initUIEvents();
     }
@@ -121,6 +123,12 @@ class MusicSequencer {
     
         var add_track_button = this.container.querySelector("#addTrack");
         add_track_button.addEventListener("click", e => {
+            // Check for maximum track threshold
+            if(this.tracks.length >= this.max_tracks) {
+                alert("Maximum number of tracks reached");
+                return;
+            }
+
             if(this.song_is_playing) {
                 this.stopSong();
             }

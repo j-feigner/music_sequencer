@@ -136,7 +136,21 @@ html, body {
 
 /* Track Styling */
 .track-container {
+    position: relative;
     padding: 20px;
+    animation-name: fade-in-down;
+    animation-duration: .4s;
+}
+
+@keyframes fade-in-down {
+    from {
+        top: -18px;
+        opacity: 0;
+    }
+    to {
+        top: 0px;
+        opacity: 1;
+    }
 }
 
 .track-fixed-header {
