@@ -24,6 +24,8 @@ class MusicSequencer {
         this.instruments = [];
         this.tracks = [];
         this.sounds = {}; // Format: { instrument_name : sound_array }
+        // Other properties
+        this.max_tracks = 6;
 
         this.initUIEvents();
     }
@@ -35,7 +37,7 @@ class MusicSequencer {
         ])
         .then(success => {
             console.log(success);
-            this.createTrack("piano");
+            this.createTrack();
         })
         .catch(error => {
             console.log(error);
@@ -121,6 +123,12 @@ class MusicSequencer {
     
         var add_track_button = this.container.querySelector("#addTrack");
         add_track_button.addEventListener("click", e => {
+            // Check for maximum track threshold
+            if(this.tracks.length >= this.max_tracks) {
+                alert("Maximum number of tracks reached");
+                return;
+            }
+
             if(this.song_is_playing) {
                 this.stopSong();
             }
@@ -128,12 +136,31 @@ class MusicSequencer {
         })
     }
 
-    createTrack(instrument) {
+    createTrack() {
         var div = document.createElement("div");
         div.innerHTML = this.track_html;
 
         var canvas = div.querySelector(".track-canvas");
-        var track = new MusicTrack(div.firstChild, this.audio_ctx, this.gain_node, instrument, canvas);
+        var track = new MusicTrack(div.firstChild, this.audio_ctx, this.gain_node, "piano", canvas);
+
+        // Initialize click event for track canvas
+        // This needs to be done in this class to ensure access to sound sources
+        track.grid.canvas.addEventListener("click", e => {
+            var hit = track.grid.fastCheckHit(e.offsetX, e.offsetY);
+            var cell = hit.cell;
+
+            if(cell) {
+                cell.is_filled = !cell.is_filled;
+                if(cell.is_filled) {
+                    var sources = this.sounds[track.instrument];
+                    var source = this.audio_ctx.createBufferSource();
+                    source.buffer = sources[sources.length - hit.row - 1];
+                    source.connect(track.audio_hook);
+                    source.start();
+                }
+                cell.draw(track.grid.ctx);
+            }
+        })
 
         this.tracks.push(track);
         this.container.insertBefore(div.firstChild, this.track_insert_point);
@@ -148,14 +175,6 @@ class MusicSequencer {
             var current_time = this.audio_ctx.currentTime;
             var beats = track.grid.getColumns();
             var sounds = this.sounds[track.instrument];
-            
-            // Check reverb, connect track destination to master gain node
-            var destination;
-            if(track.reverb) {
-                destination = track.reverb_node;
-            } else {
-                destination = track.gain_node;
-            }
 
             // Read grid by column (beat)
             beats.forEach((beat, beat_index) => {
@@ -163,7 +182,7 @@ class MusicSequencer {
                     if(note.is_filled) {
                         var source = this.audio_ctx.createBufferSource();
                         source.buffer = sounds[sounds.length - note_index - 1];
-                        source.connect(destination);
+                        source.connect(track.audio_hook);
                         source.start(current_time + (this.beat_length / 1000 * beat_index));
                         buffers.push(source);
                     }
@@ -212,12 +231,14 @@ class MusicTrack {
         this.grid;
         this.reverb_node;
 
+        this.audio_hook = this.gain_node;
+
         // Animation properties
         this.active_beat = null;
         this.animation;
         
         this.initGrid(grid_canvas);
-        this.initEvents(grid_canvas);
+        this.initEvents();
         this.initReverb(audio_ctx);
     }
 
@@ -237,15 +258,7 @@ class MusicTrack {
     }
 
     // Initialize all event listeners for track interface
-    initEvents(canvas) {
-        canvas.addEventListener("click", event => {
-            var cell = this.grid.checkHit(event.offsetX, event.offsetY);
-            if(cell) {
-                cell.is_filled = !cell.is_filled;
-                cell.draw(this.grid.ctx);
-            }
-        })
-
+    initEvents() {
         // Track options dropdown menu activation
         this.options_dropdown = this.container   
             .querySelector(".track-options-dropdown-button");
@@ -387,11 +400,17 @@ class MusicTrack {
 
         // Update track label
         this.container.querySelector(".track-label-name").innerHTML = this.name;
-        this.container.querySelector(".track-label-instr i").innerHTML = this.instrument;
+        this.container.querySelector(".track-label-instr i").innerHTML = track_instrument_select.selectedOptions[0].text;
 
         var track_reverb_switch = this.options_menu
             .querySelector(".track-reverb input");
         this.reverb = track_reverb_switch.checked;
+        // Check reverb switch for audio hook toggle
+        if(this.reverb) {
+            this.audio_hook = this.reverb_node;
+        } else {
+            this.audio_hook = this.gain_node;
+        }
     }
 
     // Updates options menu to default values based on current track state
@@ -452,8 +471,8 @@ class CanvasGrid {
         this.column_width = cell_width;
 
         this.colors = Color.createColorGradient(
-            new Color(180, 75, 0), 
-            new Color(50, 147, 211),
+            new Color(255, 0, 40), 
+            new Color(100, 10, 255),
             13);
 
         this.cells = this.initCells();
@@ -488,6 +507,16 @@ class CanvasGrid {
             }
         }
         return undefined;
+    }
+
+    fastCheckHit(x, y) {
+        var column_index = Math.floor(x / this.column_width);
+        var row_index = Math.floor(y / this.row_height);
+        return {
+            col: column_index,
+            row: row_index,
+            cell: this.cells[(column_index * this.num_rows) + row_index]
+        }
     }
 
     // Returns an array of arrays representing the grid cells grouped by column
