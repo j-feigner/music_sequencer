@@ -37,7 +37,7 @@ class MusicSequencer {
         ])
         .then(success => {
             console.log(success);
-            this.createTrack("piano");
+            this.createTrack();
         })
         .catch(error => {
             console.log(error);
@@ -136,12 +136,12 @@ class MusicSequencer {
         })
     }
 
-    createTrack(instrument) {
+    createTrack() {
         var div = document.createElement("div");
         div.innerHTML = this.track_html;
 
         var canvas = div.querySelector(".track-canvas");
-        var track = new MusicTrack(div.firstChild, this.audio_ctx, this.gain_node, instrument, canvas);
+        var track = new MusicTrack(div.firstChild, this.audio_ctx, this.gain_node, "piano", canvas);
 
         this.tracks.push(track);
         this.container.insertBefore(div.firstChild, this.track_insert_point);
@@ -395,7 +395,7 @@ class MusicTrack {
 
         // Update track label
         this.container.querySelector(".track-label-name").innerHTML = this.name;
-        this.container.querySelector(".track-label-instr i").innerHTML = this.instrument;
+        this.container.querySelector(".track-label-instr i").innerHTML = track_instrument_select.selectedOptions[0].text;
 
         var track_reverb_switch = this.options_menu
             .querySelector(".track-reverb input");

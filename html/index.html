@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, height=device-height,
+                                    initial-scale=1.0, minimum-scale=1.0">
     <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,16 +25,20 @@
                     <button type="button" id="stopSong" class="ui-button">
                         <img src="images/stop_icon.svg">
                     </button>
-                    <div class="controls-slider-block">
-                        <div class="slider-group" id="songGain">
-                            <img src="images/volume_icon">
-                            <input class="range-slider" type="range" min="0" max="100" step="1" value="100">
-                            <div class="slider-display">100</div>
+                </div>
+                <div class="sliders">
+                    <div class="slider-group" id="songGain">
+                        <img src="images/volume_icon">
+                        <input class="range-slider" type="range" min="0" max="100" step="1" value="100">
+                        <div class="slider-display">
+                            100
                         </div>
-                        <div class="slider-group" id="songTempo">
-                            <img src="images/tempo_icon">
-                            <input class="range-slider" type="range" min="40" max="200" step="5" value="90">
-                            <div class="slider-display">90</div>
+                    </div>
+                    <div class="slider-group" id="songTempo">
+                        <img src="images/tempo_icon">
+                        <input class="range-slider" type="range" min="40" max="200" step="5" value="90">
+                        <div class="slider-display">
+                            90
                         </div>
                     </div>
                 </div>
