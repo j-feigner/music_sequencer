@@ -3,8 +3,9 @@ html, body {
     height: 100%;
     border: 0px;
     margin: 0px;
-    background-color: rgb(163, 201, 231);
+    background-color: rgb(173, 202, 230);
     font-family: 'Raleway', sans-serif;
+    font-weight: 200;
 }
 
 .site-wrapper {
@@ -18,19 +19,52 @@ html, body {
 
 .ui {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     position: fixed;
     width: 100%;
     max-width: 500px;
     left: 0px;
     bottom: 0px;
-    padding: 1em;
     background-color: rgba(37, 36, 36, 0.829);
     z-index: 100;
     box-sizing: border-box;
+    color: white;
+}
+
+.site-footer {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+    background-color: rgba(37, 36, 36, 0.9);
+    padding: 7px 10px 7px 10px;
+}
+
+.site-footer #site-title {
+    font-weight: 400;
+}
+
+.site-footer a {
+    text-decoration: none;
+    color: white;
+    font-style: italic;
+    transition: .3s;
+}
+
+.site-footer a:hover {
+    color: rgb(219, 119, 119);
+}
+
+.interface-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
     gap: 1em;
+    padding: 1em;
 }
 
 .ui .controls {
@@ -172,8 +206,8 @@ html, body {
     position: relative;
     width: 100%;
     color: darkslategrey;
-    font-weight: bold;
     font-size: 16pt;
+    font-weight: 500;
     z-index: 1;
     padding: 10px;
 }

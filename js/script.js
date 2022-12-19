@@ -471,8 +471,8 @@ class CanvasGrid {
         this.column_width = cell_width;
 
         this.colors = Color.createColorGradient(
-            new Color(180, 75, 0), 
-            new Color(50, 147, 211),
+            new Color(255, 0, 40), 
+            new Color(100, 10, 255),
             13);
 
         this.cells = this.initCells();
