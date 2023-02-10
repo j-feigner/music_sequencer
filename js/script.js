@@ -25,7 +25,7 @@ class MusicSequencer {
         this.tracks = [];
         this.sounds = {}; // Format: { instrument_name : sound_array }
         // Other properties
-        this.max_tracks = 6;
+        this.max_tracks = 8;
 
         this.initUIEvents();
     }
@@ -36,11 +36,18 @@ class MusicSequencer {
             this.loadTrackHTML()
         ])
         .then(success => {
+            // App has successfully loaded, hide loading icon and create new track
             console.log(success);
-            this.createTrack();
+            var loadingIcon = document.querySelector("#appLoadingIcon");
+            loadingIcon.classList.add("fade");
+            setTimeout(() => {
+                this.createTrack();
+                loadingIcon.style.display = "none";
+            }, 500);
         })
         .catch(error => {
             console.log(error);
+            alert("Something went wrong. Please refresh and try again.");
         })
     }
 
