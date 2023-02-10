@@ -36,8 +36,14 @@ class MusicSequencer {
             this.loadTrackHTML()
         ])
         .then(success => {
+            // App has successfully loaded, hide loading icon and create new track
             console.log(success);
-            this.createTrack();
+            var loadingIcon = document.querySelector("#appLoadingIcon");
+            loadingIcon.classList.add("fade");
+            setTimeout(() => {
+                this.createTrack();
+                loadingIcon.style.display = "none";
+            }, 500);
         })
         .catch(error => {
             console.log(error);
