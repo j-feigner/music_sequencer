@@ -25,7 +25,7 @@ class MusicSequencer {
         this.tracks = [];
         this.sounds = {}; // Format: { instrument_name : sound_array }
         // Other properties
-        this.max_tracks = 6;
+        this.max_tracks = 8;
 
         this.initUIEvents();
     }
@@ -47,6 +47,7 @@ class MusicSequencer {
         })
         .catch(error => {
             console.log(error);
+            alert("Something went wrong. Please refresh and try again.");
         })
     }
 
